@@ -20,7 +20,7 @@ app/
             ├── tts.py │ 
             ├── users.py │ 
             ├── zapier.py 
-     │ └── init.py │ 
+      │  └── init.py │ 
 ├── core/ # Configurations and settings 
 ├── db/ # DB connection and session logic 
 ├── models/ # SQLAlchemy models 
