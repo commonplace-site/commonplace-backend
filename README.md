@@ -6,19 +6,20 @@ This backend project is built using **FastAPI**, designed with a clean and scala
 
 ## 📁 Folder Structure
 
-app/ ├── api/ 
-     │ └── v1/ 
+app/
+├── api/ 
+   │ └── v1/ 
           │ └── endpoints/ # API route handlers │ 
-          ├── admin.py │ 
-          ├── auth.py │ 
-          ├── feedback.py │
-          ├── notion.py │ 
-          ├── scraper.py │ 
-          ├── stt.py │ 
-          ├── synesthesia.py │
-          ├── tts.py │ 
-          ├── users.py │ 
-          ├── zapier.py 
+            ├── admin.py │ 
+            ├── auth.py │ 
+            ├── feedback.py │
+            ├── notion.py │ 
+            ├── scraper.py │ 
+            ├── stt.py │ 
+            ├── synesthesia.py │
+            ├── tts.py │ 
+            ├── users.py │ 
+            ├── zapier.py 
      │ └── init.py │ 
 ├── core/ # Configurations and settings 
 ├── db/ # DB connection and session logic 
@@ -40,8 +41,8 @@ app/ ├── api/
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repo-url>
-cd <repo-directory>
+git clone https://github.com/commonplace-site/commonplace-backend.git
+cd commonplace-backend
 
 
 2. Create and Activate a Virtual Environment
