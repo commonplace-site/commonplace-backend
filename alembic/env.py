@@ -4,8 +4,20 @@ from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 from app.db.database import BASE
-from app.models import users
-
+from app.models.users import User
+from app.models.audio_file import AudioFile
+from app.models.comprehension_log import ComprehensionLog
+from app.models.feedback_log import FeedbackLog
+from app.models.grammar_log import GrammarLog
+from app.models.integration import  Integration
+from app.models.learning_module import LearningModule
+from app.models.lesson import Lesson
+from app.models.profile import Profile
+from app.models.pronunciation_log import PronunciationLog
+from app.models.roleplay_session import RolePlaySession
+from app.models.scraped_content import ScrapedContent
+from app.models.scraping_source import ScrapingSource
+from app.models.vocabulary_log import VocabularyLog
 
 load_dotenv(dotenv_path="app/.env")
 
