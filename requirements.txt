@@ -3,4 +3,9 @@ fastapi==0.112.0
 SQLALchemy==2.0.25
 alembic>=1.10.0
 python-dotenv==1.0.0
-psycopg2-binary
+psycopg2-binary==2.9.9
+PyJWT==2.10.1
+python-jose==3.4.0
+openai==1.76
+email-validator==2.2.0
+python-multipart==0.0.20
