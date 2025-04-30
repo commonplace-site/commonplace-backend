@@ -3,22 +3,25 @@ from sqlalchemy import JSON, TIMESTAMP, BigInteger, Boolean, Column, ForeignKey,
 from app.db.database import BASE
 from sqlalchemy.orm import relationship
 
+
 class User(BASE):
     __tablename__ = 'users'
 
     id = Column(BigInteger, primary_key=True, index=True)
     email = Column(String(150), unique=True, nullable=False)
-    password_hash = Column(String(256), nullable=False)
+    password = Column(String(256), nullable=False)
 
     profile = relationship("Profile", back_populates='user', uselist=False)
-    vocabulary_logs =relationship("VocabularyLog",back_populates="user")
-    grammar_logs = relationship("GrammarLog",back_populates="user")
-    pronunciation_log = relationship("PronunciationLog",back_populates="user")
-    comprehension_logs = relationship("ComprehensionLog",back_populates="user")
-    roleplay_sessions=relationship("RolePlaySession",back_populates="user")
-    audio_files = relationship("AudioFile",back_populates="user")
-    feedback_log=relationship("FeedbackLog",back_populates="user")
-    role = Column(String(50), default='student')  # student, teacher, admin
+    # vocabulary_logs =relationship("VocabularyLog",back_populates="user")
+    vocabulary_logs = relationship("VocabularyLog", back_populates="user")
+    grammar_logs = relationship("GrammarLog", back_populates="user")
+    pronunciation_logs = relationship("PronunciationLog", back_populates="user")
+    comprehension_logs = relationship("ComprehensionLog", back_populates="user")
+    roleplay_sessions=relationship("RolePlaySession", back_populates="user")
+    audio_files = relationship("AudioFile", back_populates="user")
+    feedback_logs = relationship("FeedbackLog", back_populates="user")
+    role_id = Column(BigInteger, ForeignKey('roles.id'))
+    role = relationship("Role", back_populates="users")
     is_active = Column(Boolean, default=True)
     created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
     updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

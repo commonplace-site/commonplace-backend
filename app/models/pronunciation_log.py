@@ -9,6 +9,7 @@ class PronunciationLog(BASE):
     __tablename__ ='pronunciation_logs'
     id=Column(BigInteger,primary_key=True)
     user_id = Column(BigInteger, ForeignKey('users.id'), nullable=False)
+    user = relationship("User", back_populates="pronunciation_logs")
     original_text=Column(Text)
     audio_file_url=Column(Text)
     ai_feedback=Column(Text)

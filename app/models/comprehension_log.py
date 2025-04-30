@@ -8,6 +8,7 @@ class ComprehensionLog(BASE):
     __tablename__ = 'comprehension_logs'
     id=Column(BigInteger,primary_key=True)
     user_id = Column(BigInteger, ForeignKey('users.id'), nullable=False)
+    user = relationship("User", back_populates="comprehension_logs")
     material=Column(Text)
     comprehension_score=Column(Integer)
     created_at=Column(TIMESTAMP(timezone=True),default=datetime.utcnow)

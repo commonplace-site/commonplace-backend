@@ -10,6 +10,7 @@ class AudioFile(BASE):
     __tablename__ = 'audio_files'
     id=Column(BigInteger,primary_key=True)
     user_id = Column(BigInteger, ForeignKey('users.id'), nullable=False)
+    user = relationship("User", back_populates="audio_files")
     audio_type=Column(String(50))
     file_url=Column(Text,nullable=False)
     transcription_text=Column(Text)

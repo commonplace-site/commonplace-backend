@@ -14,6 +14,4 @@ class ScrapedContent(BASE):
     full_text = Column(Text)
     level_flag = Column(String(50))
     created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
-    
-    # Add relationship to ScrapingSource
     source = relationship("ScrapingSource", back_populates="contents")

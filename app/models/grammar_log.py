@@ -9,6 +9,7 @@ class GrammarLog(BASE):
 
     id=Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey('users.id'), nullable=False)
+    user = relationship("User", back_populates="grammar_logs")
     sentence =Column(Text,nullable=False)
     grammar_issue=Column(Text)
     feedback=Column(Text)

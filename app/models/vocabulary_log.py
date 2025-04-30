@@ -8,6 +8,7 @@ class VocabularyLog(BASE):
 
     id = Column(BigInteger, primary_key=True)
     user_id = Column(BigInteger, ForeignKey('users.id'), nullable=False)
+    user = relationship("User", back_populates="vocabulary_logs")
     word = Column(String(100), nullable=False)
     meaning = Column(String(255))
     source = Column(String(100))
