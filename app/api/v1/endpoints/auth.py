@@ -62,10 +62,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app.core.utils import create_access_token, get_current_user, hash_password, verify_password
+from app.core.utils import create_access_token, create_reset_token, get_current_user, hash_password, verify_password, verify_reset_token
 from app.db.dependencies import get_db
 from app.models.users import User
-from app.schemas.user import LoginSchema, Token, UserCreate
+from app.schemas.user import ForgotPasswordRequest, LoginSchema, ResetPasswordRequest, Token, UserCreate
 
 router = APIRouter(tags=["auth"])
 
@@ -106,6 +106,47 @@ def login(data: LoginSchema, db: Session = Depends(get_db)):
 
     token = create_access_token({"sub": user.email, "role": user.role})  
     return {"access_token": token, "token_type": "bearer"}
+
+# forgot_password route
+# @router.post("/forgot-password")
+# def forgot_password(email:str,db: Session= Depends(get_db)):
+#     user=db.query(User).filter(User.email ==email).first()
+#     if not user:
+#         raise HTTPException(status_code=404,detail="user Not found")
+#     reset_token=create_reset_token(user.email)
+#     reset_link=f"http://localhost:8000/reset-password?token={reset_token}"
+#     return{"msg":"Password reset link sent to your email"}
+
+
+# forgot_password route
+@router.post("/forgot-password")
+def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    email = payload.email
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    reset_token = create_reset_token(user.email)
+    reset_link = f"http://localhost:8000/reset-password?token={reset_token}"
+    # Here you would send the reset link to the user's email
+    return {"msg": "Password reset link sent to your email","Token":reset_token}
+
+# Reset-password
+@router.post("/reset-password")
+def reset_password(data:ResetPasswordRequest, db:Session = Depends(get_db)):
+    email = verify_reset_token(data.token)
+    if not email: 
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+    
+    user=db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.password=hash_password(data.new_password)
+    db.commit()
+    return{"msg":"Password Reset successful"}
+    
+    
 
 
 # Current user route

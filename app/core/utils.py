@@ -196,3 +196,17 @@ def role_required(allowed_roles: Union[str, List[str]]):
         return user
 
     return role_checker
+
+
+
+def create_reset_token(email:str):
+    expire = datetime.utcnow()+timedelta(minutes=30)
+    data={"sub":email,"exp":expire}
+    return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+
+def verify_reset_token(token:str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload["sub"]
+    except jwt.JWTError:
+        return None
