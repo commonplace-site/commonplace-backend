@@ -134,7 +134,7 @@ from app.db.dependencies import get_db
 from app.models.users import User
 
 # Load environment variables
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 120))
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 SECRET_KEY = os.getenv("SECRET_KEY", "your-default-secret")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
@@ -188,7 +188,7 @@ def role_required(allowed_roles: Union[str, List[str]]):
         allowed_roles = [allowed_roles]
 
     def role_checker(user: User = Depends(get_current_user)):
-        if user.role not in allowed_roles:
+        if user.role.name not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not enough permissions"

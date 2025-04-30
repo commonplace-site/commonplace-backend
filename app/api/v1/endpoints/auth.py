@@ -62,7 +62,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from app.core.utils import create_access_token, create_reset_token, get_current_user, hash_password, verify_password, verify_reset_token
+from app.core.utils import create_access_token, create_reset_token, get_current_user, hash_password, role_required, verify_password, verify_reset_token
 from app.db.dependencies import get_db
 from app.models.users import User
 from app.schemas.user import ForgotPasswordRequest, LoginSchema, ResetPasswordRequest, Token, UserCreate
@@ -79,6 +79,8 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already exists")
 
     new_user = User(
+        first_Name=user.first_Name,
+        last_Name=user.last_Name,
         email=user.email,
         password=hash_password(user.password),
         role_id=3
@@ -103,8 +105,13 @@ def login(data: LoginSchema, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
     if not user or not verify_password(data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    token = create_access_token({"sub": user.email, "role": user.role})  
+    if not user.role:
+        raise HTTPException(status_code=400, detail="User role not assigned")
+    # token = create_access_token({"sub": user.email, "role": user.role.name})
+    token = create_access_token({
+    "sub": user.email,
+    "role": user.role.name  # ✅ this works because user.role is a Role object
+})
     return {"access_token": token, "token_type": "bearer"}
 
 # forgot_password route
@@ -153,3 +160,8 @@ def reset_password(data:ResetPasswordRequest, db:Session = Depends(get_db)):
 @router.get("/me")
 def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@router.get("/admin")
+def admin_route(user=Depends(role_required("Admin"))):
+    return{"msg":f"Welcome {user.first_Name}"}
