@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer
 from app.api.v1 import router as all_routes
 
 
-load_dotenv(dotenv_path=".env")
+load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
@@ -14,7 +14,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 1))
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 SYNESTHESIA_API_KEY = os.getenv("SYNESTHESIA_API_KEY")
 
-print("API Key loaded:==========================================:", os.getenv("OPENAI_API_KEY"))
+
 
 app=FastAPI(
     title="Language Learning Ai  Backend",
