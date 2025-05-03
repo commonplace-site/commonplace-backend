@@ -124,6 +124,7 @@ import os
 from typing import Optional, List, Dict, Union
 from datetime import datetime, timedelta
 
+from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status, Security
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -132,6 +133,8 @@ from sqlalchemy.orm import Session
 
 from app.db.dependencies import get_db
 from app.models.users import User
+
+load_dotenv() 
 
 # Load environment variables
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 120))
@@ -197,6 +200,17 @@ def role_required(allowed_roles: Union[str, List[str]]):
 
     return role_checker
 
+def verify_token(auth_header: str):
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid or missing Authorization header")
+
+    token = auth_header.split(" ")[1]
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload  # Optionally return payload like user_id, roles, etc.
+    except JWTError:
+        raise HTTPException(status_code=403, detail="Invalid or expired token")
 
 
 def create_reset_token(email:str):

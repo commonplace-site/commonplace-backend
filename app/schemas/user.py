@@ -21,3 +21,10 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
+
+
+
+class AalamInput(BaseModel):
+    user_id: str
+    text: str
+    context: str
