@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import JSON, TIMESTAMP, BigInteger, Boolean, Column, ForeignKey, Integer,String, Text
+from sqlalchemy import JSON, TIMESTAMP, UUID, BigInteger, Boolean, Column, ForeignKey, Integer,String, Text
 from app.db.database import BASE
 from sqlalchemy.orm import relationship
 
@@ -9,7 +9,7 @@ class AudioFile(BASE):
 
     __tablename__ = 'audio_files'
     id=Column(BigInteger,primary_key=True)
-    user_id = Column(BigInteger, ForeignKey('users.id'), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     user = relationship("User", back_populates="audio_files")
     audio_type=Column(String(50))
     file_url=Column(Text,nullable=False)

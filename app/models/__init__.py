@@ -13,3 +13,4 @@ from .learning_module import LearningModule
 from .scraping_source import ScrapingSource
 from .scraped_content import ScrapedContent
 from .role import Role
+from .files import FileMetadata

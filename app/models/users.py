@@ -1,5 +1,6 @@
 from datetime import datetime
-from sqlalchemy import JSON, TIMESTAMP, BigInteger, Boolean, Column, ForeignKey, Integer,String, Text
+import uuid
+from sqlalchemy import JSON, TIMESTAMP, UUID, BigInteger, Boolean, Column, ForeignKey, Integer,String, Text
 from app.db.database import BASE
 from sqlalchemy.orm import relationship
 
@@ -7,7 +8,7 @@ from sqlalchemy.orm import relationship
 class User(BASE):
     __tablename__ = 'users'
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     first_Name=Column(String(256), nullable=False)
     last_Name=Column(String(256), nullable=True)
     email = Column(String(150), unique=True, nullable=False)
@@ -24,6 +25,7 @@ class User(BASE):
     feedback_logs = relationship("FeedbackLog", back_populates="user")
     role_id = Column(BigInteger, ForeignKey('roles.id'))
     role = relationship("Role", back_populates="users")
+    files = relationship("FileMetadata", back_populates="user")
     is_active = Column(Boolean, default=True)
     created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
     updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
