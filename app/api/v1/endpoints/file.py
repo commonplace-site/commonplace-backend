@@ -20,7 +20,7 @@ async def upload_file(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db)
 ):
-    #  user = get_user_from_token(token)
+    #user = get_user_from_token(token)
     folder = classify_file_path(file.filename)
     s3_url = await upload_to_s3(file, folder)
 
@@ -28,7 +28,6 @@ async def upload_file(
         filename=file.filename,
         s3_url=s3_url,
         uploaded_by=user_id,
-        folder=folder,
         filetype=file.content_type,
     )
     db.add(new_file)

@@ -10,7 +10,7 @@ router = APIRouter(tags=["Slack"])
 SLACK_FORWARD_URL = os.getenv("SLACK_FORWARD_URL", "https://aalam.smartadroit.com/api/slack-events")
 
 
-@app.post("/api/slack/cp-sync")
+@router.post("/api/slack/cp-sync")
 async def slack_cp_sync(request: Request):
     """Capture Slack uploads/comments for Control Panel sync."""
     payload = await request.json()
