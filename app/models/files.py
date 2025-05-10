@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, String, DateTime
+from sqlalchemy import TIMESTAMP, Column, ForeignKey, String, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.db.database import BASE
@@ -17,3 +17,6 @@ class FileMetadata(BASE):
     uploaded_at = Column(DateTime, default=datetime)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))  
     user = relationship("User", back_populates="files")
+    created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+

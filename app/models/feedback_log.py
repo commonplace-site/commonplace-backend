@@ -14,4 +14,5 @@ class FeedbackLog(BASE):
     source = Column(String(50))
     feedback_text=Column(Text)
     related_module=Column(String(100))
-    created_at=Column(TIMESTAMP(timezone=True),default=datetime.utcnow)
+    created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

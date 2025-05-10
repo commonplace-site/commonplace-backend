@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, Form
 
 from app.core.utils import get_current_user
+from app.models.users import User
 
 router = APIRouter(
     # prefix="/user",

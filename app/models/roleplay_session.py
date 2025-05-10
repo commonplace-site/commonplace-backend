@@ -15,4 +15,6 @@ class RolePlaySession(BASE):
     avatar_used=Column(String(100))
     recording_url =Column(Text)
     feedback=Column(Text)
-    created_at = Column(TIMESTAMP(timezone=True),default=datetime.utcnow)
+    created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+

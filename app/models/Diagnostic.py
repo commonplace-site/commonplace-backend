@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text
+from datetime import datetime
+from sqlalchemy import TIMESTAMP, Column, Integer, String, Text
 from app.db.database import BASE
 
 class DiagnosticResult(BASE):
@@ -8,3 +9,5 @@ class DiagnosticResult(BASE):
     score = Column(Integer)
     level = Column(String)
     learning_content = Column(Text)
+    created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

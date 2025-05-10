@@ -15,10 +15,11 @@ from app.models.lesson import Lesson
 from app.models.profile import Profile
 from app.models.pronunciation_log import PronunciationLog
 from app.models.roleplay_session import RolePlaySession
-from app.models.scraped_content import ScrapedContent
+# from app.models.scraped_content import ScrapedContent
 from app.models.scraping_source import ScrapingSource
 from app.models.vocabulary_log import VocabularyLog
 from app.models.role import Role
+from app.models.licenskey import LicenseKey
 
 load_dotenv(dotenv_path="app/.env")
 

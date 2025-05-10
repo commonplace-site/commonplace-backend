@@ -1,7 +1,7 @@
 
 from datetime import datetime
 from uuid import UUID
-from sqlalchemy import  Column, Float,  Integer,String
+from sqlalchemy import  TIMESTAMP, Column, Float,  Integer,String
 from app.db.database import BASE
 from sqlalchemy.orm import relationship
 
@@ -15,3 +15,5 @@ class LanguageTestAudio(BASE):
     language_level = Column(String)
     rubric_score = Column(Float, nullable=True)
     file_path = Column(String)
+    created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

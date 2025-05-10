@@ -13,4 +13,5 @@ class GrammarLog(BASE):
     sentence =Column(Text,nullable=False)
     grammar_issue=Column(Text)
     feedback=Column(Text)
-    created_at=Column(TIMESTAMP(timezone=True),default=datetime.utcnow)
+    created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

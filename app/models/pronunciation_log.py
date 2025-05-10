@@ -13,4 +13,5 @@ class PronunciationLog(BASE):
     original_text=Column(Text)
     audio_file_url=Column(Text)
     ai_feedback=Column(Text)
-    created_at=Column(TIMESTAMP(timezone=True),default=datetime.utcnow)
+    created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

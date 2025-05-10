@@ -29,15 +29,15 @@ async def speech_to_text(file: UploadFile = File(...), current_user: User = Depe
 
 
 
-@app.post("/save_audio/")
-def save_audio(audio_path: str = Form(...), db: Session = Depends(SessionLocal), current_user: User = Depends(get_current_user)):
-    new_session = SessionModel(user_id=current_user.id)
-    db.add(new_session)
-    db.commit()
-    db.refresh(new_session)
+# @app.post("/save_audio/")
+# def save_audio(audio_path: str = Form(...), db: Session = Depends(SessionLocal), current_user: User = Depends(get_current_user)):
+#     new_session = SessionModel(user_id=current_user.id)
+#     db.add(new_session)
+#     db.commit()
+#     db.refresh(new_session)
 
-    audio = AudioFile(session_id=new_session.id, filename=audio_path)
-    db.add(audio)
-    db.commit()
-    return {"msg": "Audio saved successfully"}
+#     audio = AudioFile(session_id=new_session.id, filename=audio_path)
+#     db.add(audio)
+#     db.commit()
+#     return {"msg": "Audio saved successfully"}
  

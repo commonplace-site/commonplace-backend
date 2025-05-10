@@ -14,4 +14,5 @@
 #     full_text = Column(Text)
 #     level_flag = Column(String(50))
 #     created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+
 #     source = relationship("ScrapingSource", back_populates="contents")
