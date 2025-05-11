@@ -19,6 +19,8 @@ class AudioFile(BASE):
     language_level =Column(String(100))
     rubric_score=Column(Float ,nullable=True)
     created_at= Column(TIMESTAMP(timezone=True),default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
 
 
 

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>New Ticket Assignment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .content {
+            background-color: #ffffff;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+        .ticket-info {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>New Ticket Assignment</h2>
+    </div>
+    <div class="content">
+        <p>Hello,</p>
+        <p>You have been assigned a new ticket in {{ project_name }}.</p>
+        
+        <div class="ticket-info">
+            <h3>{{ ticket_title }}</h3>
+            <p><strong>Ticket ID:</strong> {{ ticket_id }}</p>
+            <p><strong>Assigned by:</strong> {{ assigned_by }}</p>
+            <p><strong>Description:</strong></p>
+            <p>{{ ticket_description }}</p>
+        </div>
+
+        <p>Please review the ticket and take necessary actions.</p>
+        
+        <a href="{{ settings.FRONTEND_URL }}/tickets/{{ ticket_id }}" class="button">View Ticket</a>
+    </div>
+    <div class="footer">
+        <p>This is an automated message from {{ project_name }}. Please do not reply to this email.</p>
+    </div>
+</body>
+</html> 

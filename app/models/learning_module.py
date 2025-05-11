@@ -13,4 +13,5 @@ class LearningModule(BASE):
     status=Column(String(50),default='pending')
     active_user=Column(Integer,default=0)
     last_updated_at =Column(TIMESTAMP(timezone=True))
-    created_at=Column(TIMESTAMP(timezone=True),default=datetime.utcnow)
+    created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

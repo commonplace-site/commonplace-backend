@@ -18,4 +18,5 @@ class Integration(BASE):
     api_key=Column(Text)
     config=Column(JSON)    
     last_check_at=Column(TIMESTAMP(timezone=True))
-    created_at=Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

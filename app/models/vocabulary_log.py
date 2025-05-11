@@ -13,3 +13,5 @@ class VocabularyLog(BASE):
     meaning = Column(String(255))
     source = Column(String(100))
     added_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
