@@ -11,7 +11,7 @@ from .feedback_log import FeedbackLog
 from .integration import Integration
 from .learning_module import LearningModule
 from .scraping_source import ScrapingSource
-from .scraped_content import ScrapedContent
+# from .scraped_content import ScrapedContent
 from .role import Role
 from .files import File
 from .licenskey import LicenseKey
