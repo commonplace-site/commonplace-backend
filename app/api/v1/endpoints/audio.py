@@ -1,17 +1,19 @@
 from typing import List, Optional
 from uuid import UUID
-from fastapi import APIRouter, File, Form, Depends, Response, UploadFile
+from fastapi import APIRouter, File, Form, Depends, Response, UploadFile, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
 import yaml
 from app.core.storage import save_audio_file
-from app.core.utils import role_required
+from app.core.utils import role_required, get_current_user, speech_to_text, text_to_speech
 from app.db.dependencies import get_db
 from app.models.audio_file import AudioFile
 from app.schemas.files import FileOut
 from app.schemas.licens import LicenseCreate
 from app.services.s3 import upload_to_s3
 from app.services.whisper_parse import parse_audio_with_whisper
+import tempfile
+import os
 
 
 router = APIRouter(tags=['Audio files'])
@@ -165,3 +167,56 @@ def parse_audio_and_tag(file: UploadFile = File(...)):
         "tags": tags,
         "file_url": file_url  # Returning the S3 URL for the uploaded audio
     }
+
+@router.post("/transcribe")
+async def transcribe_audio(
+    file: UploadFile = File(...),
+    language: str = "zh-CN",
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(role_required("Student"))
+):
+    """Transcribe audio file to text"""
+    # Save uploaded file temporarily
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
+        content = await file.read()
+        temp_file.write(content)
+        temp_file.flush()
+        
+        try:
+            # Transcribe audio
+            text = speech_to_text(temp_file.name, language)
+            
+            # Upload original audio to S3
+            file_url = upload_to_s3(file, "AudioSubmissions")
+            
+            # Save to database
+            audio_file = AudioFile(
+                user_id=current_user["id"],
+                file_url=file_url,
+                audio_type="submission"
+            )
+            db.add(audio_file)
+            db.commit()
+            
+            return {
+                "text": text,
+                "file_url": file_url
+            }
+        finally:
+            os.unlink(temp_file.name)
+
+@router.post("/synthesize")
+async def synthesize_speech(
+    text: str,
+    language: str = "zh-CN",
+    current_user: dict = Depends(role_required("Student"))
+):
+    """Convert text to speech"""
+    try:
+        audio_data = await text_to_speech(text, language)
+        return {
+            "audio_data": audio_data,
+            "format": "mp3"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
