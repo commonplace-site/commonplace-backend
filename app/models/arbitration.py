@@ -14,7 +14,7 @@ class Arbitration(BASE):
     status = Column(String, nullable=False)
     priority = Column(Integer, default=1)
     review_notes = Column(String)
-    metadata = Column(JSON)
+    arbitration_metadata = Column(JSON)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     reviewed_by = Column(String)

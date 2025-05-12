@@ -27,6 +27,7 @@ import httpx
 from uuid import UUID, uuid4
 import tempfile
 import uuid
+from app.services.avatar import avatar_service
 
 router = APIRouter(tags=["Aalam Integration"])
 
@@ -362,7 +363,7 @@ async def aalam_tts_endpoint(
     authorization: str = Header(None),
     db: Session = Depends(get_db)
 ):
-    """Aalam endpoint with TTS integration"""
+    """Aalam endpoint with TTS and avatar integration"""
     verify_token(authorization)
 
     try:
@@ -392,12 +393,20 @@ async def aalam_tts_endpoint(
             pitch=data.pitch
         )
         
+        # Generate avatar video
+        avatar_result = await avatar_service.generate_avatar(
+            text=message,
+            voice_id=data.voice_name,  # Use the same voice ID
+            style="natural",  # You can make this configurable
+            emotion="neutral"  # You can make this configurable
+        )
+        
         # Save audio to temporary file
         temp_audio_path = f"{TEMP_AUDIO_DIR}/{uuid.uuid4()}.{data.audio_format}"
         with open(temp_audio_path, "wb") as f:
             f.write(audio_data)
         
-        # Create AalamResponse object
+        # Create AalamResponse object with avatar information
         aalam_response = AalamResponse(
             user_id=data.user_id,
             context=data.context,
@@ -407,7 +416,9 @@ async def aalam_tts_endpoint(
             timestamp=datetime.utcnow(),
             model_source=data.model_source,
             metadata=data.metadata,
-            audio_file=temp_audio_path
+            audio_file=temp_audio_path,
+            avatar_url=avatar_result["video_url"],  # Add avatar URL
+            avatar_metadata=avatar_result["metadata"]  # Add avatar metadata
         )
 
         # Log interactions

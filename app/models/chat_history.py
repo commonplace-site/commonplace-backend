@@ -12,7 +12,7 @@ class ChatHistory(BASE):
     context = Column(String(50), nullable=False)  # speak, write, explain, etc.
     model_source = Column(String(50), nullable=False)
     messages = Column(JSON, nullable=False)  # List of message objects
-    metadata = Column(JSON)
+    chat_metadata = Column(JSON)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     is_archived = Column(Integer, default=0)  # 0 = active, 1 = archived

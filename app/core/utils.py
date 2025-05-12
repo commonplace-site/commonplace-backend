@@ -18,6 +18,10 @@ import asyncio
 import tempfile
 import jieba
 import re
+from pydub import AudioSegment
+import ffmpeg
+import logging
+from app.core.source_registry import SourceRegistry, SourceType
 
 load_dotenv() 
 
@@ -135,17 +139,73 @@ async def text_to_speech(text: str, language: str = "zh-CN") -> bytes:
     os.unlink(temp_file.name)
     return audio_data
 
-def speech_to_text(audio_file_path: str, language: str = "zh-CN") -> str:
-    """Convert speech to text using Google's speech recognition"""
-    with sr.AudioFile(audio_file_path) as source:
-        audio = recognizer.record(source)
-        try:
-            text = recognizer.recognize_google(audio, language=language)
-            return text
-        except sr.UnknownValueError:
-            raise HTTPException(status_code=400, detail="Could not understand audio")
-        except sr.RequestError as e:
-            raise HTTPException(status_code=500, detail=f"Could not request results; {str(e)}")
+def verify_ffmpeg_installation() -> bool:
+    """Verify FFmpeg installation and return True if properly installed"""
+    try:
+        # Try to get ffmpeg version
+        stream = ffmpeg.input('dummy.mp4')
+        stream = ffmpeg.output(stream, 'dummy.mp3')
+        ffmpeg.run(stream, capture_stdout=True, capture_stderr=True, overwrite_output=True)
+        return True
+    except ffmpeg.Error as e:
+        logger.error(f"FFmpeg error: {e.stderr.decode() if e.stderr else str(e)}")
+        return False
+    except Exception as e:
+        logger.error(f"Error checking FFmpeg: {str(e)}")
+        return False
+
+async def stt_transcribe(
+    audio_file_path: str,
+    language: str = "zh-CN",
+    punctuate: bool = True,
+    speaker_diarization: bool = False,
+    word_timestamps: bool = False,
+    profanity_filter: bool = True
+) -> Dict[str, Any]:
+    """
+    Transcribe audio file to text with advanced options
+    """
+    try:
+        # Verify FFmpeg installation
+        if not verify_ffmpeg_installation():
+            logger.warning("FFmpeg not found. Attempting to use alternative method...")
+            # Fallback to direct file reading if FFmpeg is not available
+            with open(audio_file_path, 'rb') as f:
+                audio_data = f.read()
+        else:
+            # Convert audio to required format using FFmpeg
+            audio = AudioSegment.from_file(audio_file_path)
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
+                audio.export(temp_file.name, format='wav')
+                with open(temp_file.name, 'rb') as f:
+                    audio_data = f.read()
+                os.unlink(temp_file.name)
+
+        # Initialize Edge TTS
+        communicate = edge_tts.Communicate()
+        
+        # Configure transcription settings
+        communicate.language = language
+        communicate.punctuate = punctuate
+        communicate.speaker_diarization = speaker_diarization
+        communicate.word_timestamps = word_timestamps
+        communicate.profanity_filter = profanity_filter
+
+        # Transcribe audio
+        result = await communicate.transcribe(audio_data)
+        
+        return {
+            "text": result.text,
+            "language": language,
+            "punctuated": punctuate,
+            "speaker_diarization": speaker_diarization,
+            "word_timestamps": word_timestamps,
+            "profanity_filtered": profanity_filter
+        }
+
+    except Exception as e:
+        logger.error(f"Transcription error: {str(e)}")
+        raise Exception(f"Transcription failed: {str(e)}")
 
 def process_chinese_text(text: str, punctuate: bool = True) -> str:
     """
@@ -187,3 +247,17 @@ def filter_profanity(text: str) -> str:
     return text
     
 
+# Register a source
+SourceRegistry.register_source(
+    "aalam_gpt4",
+    SourceType.GPT,
+    {"model": "gpt-4", "version": "1.0"}
+)
+
+# Track a submission
+SourceRegistry.track_submission(
+    "aalam_gpt4",
+    "room127_entry",
+    {"tag": "memory_drift", "confidence": 0.85}
+)
+    

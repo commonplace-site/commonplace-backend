@@ -10,11 +10,84 @@ load_dotenv()
 SPEECH_KEY = os.getenv("AZURE_SPEECH_KEY")
 SPEECH_REGION = os.getenv("AZURE_SPEECH_REGION")
 
-# Audio format options
+# Audio format options - Updated with correct enum values
 AUDIO_FORMATS = {
     "mp3": speechsdk.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3,
-    "wav": speechsdk.SpeechSynthesisOutputFormat.Riff16Khz16Bit32KBpsMonoPcm,
-    "ogg": speechsdk.SpeechSynthesisOutputFormat.Ogg16Khz16Bit32KBpsMonoOpus,
+    "wav": speechsdk.SpeechSynthesisOutputFormat.Riff16Khz16BitMonoPcm,
+    "ogg": speechsdk.SpeechSynthesisOutputFormat.Ogg16Khz16BitMonoOpus,
+}
+
+
+# Let's update the AUDIO_FORMATS with the correct enum values
+# AUDIO_FORMATS = {
+#     "mp3": speechsdk.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3,
+#     "wav": speechsdk.SpeechSynthesisOutputFormat.Riff16Khz16Bit32KBpsMonoPcm,
+#     "ogg": speechsdk.SpeechSynthesisOutputFormat.Ogg16Khz16Bit32KBpsMonoOpus,
+# }
+
+# Available voices for different languages
+VOICES = {
+    "zh-CN": [
+        "zh-CN-XiaoxiaoNeural",  # Female
+        "zh-CN-YunxiNeural",     # Male
+        "zh-CN-YunyangNeural",   # Male
+        "zh-CN-XiaochenNeural",  # Female
+        "zh-CN-XiaohanNeural",   # Female
+        "zh-CN-XiaomengNeural",  # Female
+        "zh-CN-XiaomoNeural",    # Female
+        "zh-CN-XiaoqiuNeural",   # Female
+        "zh-CN-XiaoruiNeural",   # Female
+        "zh-CN-XiaoshuangNeural",# Female
+        "zh-CN-XiaoxuanNeural",  # Female
+        "zh-CN-XiaoyanNeural",   # Female
+        "zh-CN-XiaoyiNeural",    # Female
+        "zh-CN-XiaozhenNeural",  # Female
+        "zh-CN-YunfengNeural",   # Male
+        "zh-CN-YunhaoNeural",    # Male
+        "zh-CN-YunjianNeural",   # Male
+        "zh-CN-YunxiaNeural",    # Male
+        "zh-CN-YunzeNeural",     # Male
+    ],
+    "en-US": [
+        "en-US-AriaNeural",      # Female
+        "en-US-GuyNeural",       # Male
+        "en-US-JennyNeural",     # Female
+        "en-US-RogerNeural",     # Male
+        "en-US-SteffanNeural",   # Male
+    ]
+}
+
+def get_voice_info(voice_name: str) -> Dict[str, Any]:
+    """
+    Get detailed information about a specific voice
+    
+    Args:
+        voice_name: The voice name to get info for
+    
+    Returns:
+        dict: Voice information including gender, language, etc.
+    """
+    # Extract language and gender from voice name
+    parts = voice_name.split("-")
+    if len(parts) >= 3:
+        language = f"{parts[0]}-{parts[1]}"
+        gender = "Female" if "Xiao" in parts[2] else "Male"
+    else:
+        language = "unknown"
+        gender = "unknown"
+    
+    return {
+        "name": voice_name,
+        "language": language,
+        "gender": gender,
+        "neural": "Neural" in voice_name,
+        "description": f"{gender} voice for {language}"
+    }
+
+# Get detailed voice information
+VOICE_INFO = {
+    lang: [get_voice_info(voice) for voice in voices]
+    for lang, voices in VOICES.items()
 }
 
 def get_speech_config(
@@ -115,69 +188,4 @@ async def tts_generate(
             raise Exception(f"Speech synthesis failed: {error_details.reason}, {error_details.error_details}")
             
     except Exception as e:
-        raise Exception(f"TTS generation failed: {str(e)}")
-
-def get_voice_info(voice_name: str) -> Dict[str, Any]:
-    """
-    Get detailed information about a specific voice
-    
-    Args:
-        voice_name: The voice name to get info for
-    
-    Returns:
-        dict: Voice information including gender, language, etc.
-    """
-    # Extract language and gender from voice name
-    parts = voice_name.split("-")
-    if len(parts) >= 3:
-        language = f"{parts[0]}-{parts[1]}"
-        gender = "Female" if "Xiao" in parts[2] else "Male"
-    else:
-        language = "unknown"
-        gender = "unknown"
-    
-    return {
-        "name": voice_name,
-        "language": language,
-        "gender": gender,
-        "neural": "Neural" in voice_name,
-        "description": f"{gender} voice for {language}"
-    }
-
-# Available voices for different languages
-VOICES = {
-    "zh-CN": [
-        "zh-CN-XiaoxiaoNeural",  # Female
-        "zh-CN-YunxiNeural",     # Male
-        "zh-CN-YunyangNeural",   # Male
-        "zh-CN-XiaochenNeural",  # Female
-        "zh-CN-XiaohanNeural",   # Female
-        "zh-CN-XiaomengNeural",  # Female
-        "zh-CN-XiaomoNeural",    # Female
-        "zh-CN-XiaoqiuNeural",   # Female
-        "zh-CN-XiaoruiNeural",   # Female
-        "zh-CN-XiaoshuangNeural",# Female
-        "zh-CN-XiaoxuanNeural",  # Female
-        "zh-CN-XiaoyanNeural",   # Female
-        "zh-CN-XiaoyiNeural",    # Female
-        "zh-CN-XiaozhenNeural",  # Female
-        "zh-CN-YunfengNeural",   # Male
-        "zh-CN-YunhaoNeural",    # Male
-        "zh-CN-YunjianNeural",   # Male
-        "zh-CN-YunxiaNeural",    # Male
-        "zh-CN-YunzeNeural",     # Male
-    ],
-    "en-US": [
-        "en-US-AriaNeural",      # Female
-        "en-US-GuyNeural",       # Male
-        "en-US-JennyNeural",     # Female
-        "en-US-RogerNeural",     # Male
-        "en-US-SteffanNeural",   # Male
-    ]
-}
-
-# Get detailed voice information
-VOICE_INFO = {
-    lang: [get_voice_info(voice) for voice in voices]
-    for lang, voices in VOICES.items()
-} 
+        raise Exception(f"TTS generation failed: {str(e)}") 
