@@ -6,10 +6,12 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import ValidationError
 
+from app.main import SECRET_KEY
+
 # Security configurations
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECURITY_ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 120
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 # Rate limiting configuration

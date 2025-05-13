@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter, HTTPException, Header, Depends, UploadFile, File, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Header, Depends, UploadFile, File, BackgroundTasks, Form
 from openai import OpenAI
 from dotenv import load_dotenv
 import openai
@@ -28,6 +28,7 @@ from uuid import UUID, uuid4
 import tempfile
 import uuid
 from app.services.avatar import avatar_service
+from app.services.redis_service import redis_service
 
 router = APIRouter(tags=["Aalam Integration"])
 
@@ -51,7 +52,58 @@ def generate_system_prompt(text: str, model_source: ModelSource) -> str:
         'write': 'You are Aalam, helping the user practice structured writing. Offer suggestions, feedback, and alternatives.',
         'explain': 'You are Aalam, guiding the user through new ideas and language discovery. Offer insightful, unexpected responses.',
         'arbitrate': 'You are Aalam, reviewing and validating content from other AI models. Provide detailed feedback and suggestions for improvement.',
-        'review': 'You are Aalam, reviewing teacher and module submissions. Ensure content quality and educational value.'
+        'review': 'You are Aalam, reviewing teacher and module submissions. Ensure content quality and educational value.',
+        'code': '''You are Aalam, an expert programming assistant. When asked to generate code, follow this exact format:
+
+# Project Overview
+[One paragraph describing what the code does and its main features]
+
+# Project Structure
+```
+project/
+├── [filename1]     # [brief purpose]
+├── [filename2]     # [brief purpose]
+└── [filename3]     # [brief purpose]
+```
+
+# Implementation
+
+## [filename1]
+```[language]
+[complete code with comments]
+```
+
+## [filename2]
+```[language]
+[complete code with comments]
+```
+
+## [filename3]
+```[language]
+[complete code with comments]
+```
+
+# Setup Instructions
+1. [Step 1]
+2. [Step 2]
+3. [Step 3]
+
+# Usage
+[How to use the code with examples]
+
+# Notes
+- [Important note 1]
+- [Important note 2]
+- [Important note 3]
+
+For each code file:
+- Include all necessary imports
+- Add clear, concise comments
+- Follow language-specific best practices
+- Include error handling
+- Use proper indentation and formatting
+- Add type hints where appropriate
+- Include docstrings for functions/classes'''
     }.get(text, 'You are Aalam, a helpful language guide.')
 
     if model_source != ModelSource.AALAM:
@@ -114,14 +166,19 @@ async def check_subservient_api(authorization: str, db: Session) -> bool:
 async def log_to_codex(content: str, context: str):
     """Log content to Codex for analysis"""
     try:
+        # Log to Redis
+        log_entry = {
+            "content": content,
+            "context": context,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        await redis_service.add_to_list("codex_logs", log_entry)
+        
+        # Also log to external service
         async with httpx.AsyncClient() as client:
             await client.post(
                 CODEX_ENDPOINT,
-                json={
-                    "content": content,
-                    "context": context,
-                    "timestamp": datetime.utcnow().isoformat()
-                }
+                json=log_entry
             )
         logger.info(f"Logged to Codex - Context: {context}")
     except Exception as e:
@@ -202,7 +259,36 @@ async def arbitrate_content(
 ):
     """Endpoint for arbitrating content from other AI models"""
     verify_token(authorization)
-    return await process_arbitration_request(request, db)
+    
+    try:
+        # Log the arbitration request
+        await redis_service.log_audit(
+            action="arbitration_request",
+            user_id=request.user_id,
+            details={
+                "content": request.content,
+                "context": request.context,
+                "model_source": request.model_source.value
+            }
+        )
+        
+        response = await process_arbitration_request(request, db)
+        
+        # Log the arbitration response
+        await redis_service.log_audit(
+            action="arbitration_response",
+            user_id=request.user_id,
+            details={
+                "request_id": response.request_id,
+                "status": response.status.value,
+                "review_notes": response.review_notes
+            }
+        )
+        
+        return response
+    except Exception as e:
+        logger.error(f"Arbitration failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Arbitration failed: {str(e)}")
 
 @router.post("/aalam/teacher-submit", response_model=AalamResponse)
 async def teacher_submission(
@@ -585,8 +671,19 @@ async def aalam_endpoint(
         # Check if request is from subservient API
         is_subservient = await check_subservient_api(authorization, db)
         
+        # Determine if this is a code-related query
+        is_code_query = any(keyword in data.text.lower() for keyword in [
+            'code', 'program', 'function', 'class', 'algorithm', 'implement',
+            'python', 'javascript', 'java', 'c++', 'typescript', 'sql',
+            'how to write', 'how to create', 'how to implement', 'create a',
+            'build a', 'develop a', 'make a', 'show me', 'give me', 'write a'
+        ])
+        
+        # Set context to 'code' if it's a code-related query
+        context = 'code' if is_code_query else data.context
+        
         # Generate system prompt based on mode
-        system_prompt = generate_system_prompt(data.context, ModelSource.AALAM)
+        system_prompt = generate_system_prompt(context, ModelSource.AALAM)
         
         # Call OpenAI API to generate response
         response = openai.chat.completions.create(
@@ -599,35 +696,39 @@ async def aalam_endpoint(
         
         message = response.choices[0].message.content
         
-        # Create AalamResponse object with source tracking
+        # Create AalamResponse object with all required fields
         aalam_response = AalamResponse(
-            content=message,
+            user_id=data.user_id,
+            context=context,
+            response=message,
             source="📎 Aalam",
             confidence=1.0,
-            model_source=ModelSource.AALAM
+            timestamp=datetime.utcnow(),
+            model_source=ModelSource.AALAM,
+            metadata={
+                **(data.metadata or {}),
+                "is_code_response": is_code_query,
+                "language": "python" if "python" in data.text.lower() else 
+                           "javascript" if "javascript" in data.text.lower() else
+                           "java" if "java" in data.text.lower() else
+                           "typescript" if "typescript" in data.text.lower() else
+                           "sql" if "sql" in data.text.lower() else
+                           "c++" if "c++" in data.text.lower() else
+                           "unknown"
+            }
         )
 
         # Log to Room 127
-        await log_to_room_127(data.user_id, data.context, aalam_response, db)
+        await log_to_room_127(data.user_id, context, aalam_response, db)
 
         # Log to Codex for analysis
-        await log_to_codex(message, data.context)
+        await log_to_codex(message, context)
 
         # Add to suspense queue if needed
         if is_subservient:
             await add_to_suspense_queue(message)
 
-        # Return the response with source information
-        return {
-            "user_id": data.user_id,
-            "context": data.context,
-            "response": aalam_response.content,
-            "source": aalam_response.source,
-            "confidence": aalam_response.confidence,
-            "timestamp": aalam_response.timestamp.isoformat(),
-            "model_source": aalam_response.model_source.value,
-            "metadata": aalam_response.metadata
-        }
+        return aalam_response
 
     except Exception as e:
         logger.error(f"Aalam failed to respond: {str(e)}")
@@ -710,14 +811,24 @@ async def create_chat(
     verify_token(authorization)
     
     try:
+        # Convert messages to dictionaries without timestamp
+        message_dicts = []
+        for msg in chat.messages:
+            msg_dict = {
+                "role": msg.role,
+                "content": msg.content,
+                "metadata": msg.metadata
+            }
+            message_dicts.append(msg_dict)
+
         # Create new chat history
         new_chat = ChatHistory(
             user_id=chat.user_id,
             title=chat.title,
             context=chat.context,
             model_source=chat.model_source.value,
-            messages=[msg.dict() for msg in chat.messages],
-            metadata=chat.metadata
+            messages=message_dicts,
+            chat_metadata=chat.metadata
         )
         db.add(new_chat)
         db.commit()
@@ -730,7 +841,7 @@ async def create_chat(
             context=new_chat.context,
             model_source=ModelSource(new_chat.model_source),
             messages=[Message(**msg) for msg in new_chat.messages],
-            metadata=new_chat.metadata,
+            metadata=new_chat.chat_metadata,
             created_at=new_chat.created_at,
             updated_at=new_chat.updated_at,
             is_archived=bool(new_chat.is_archived),
@@ -951,3 +1062,143 @@ async def delete_chat(
     except Exception as e:
         logger.error(f"Failed to delete chat: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to delete chat: {str(e)}")
+
+@router.post("/aalam/conversation", response_model=AalamResponse)
+async def aalam_conversation(
+    audio_file: UploadFile = File(...),
+    user_id: str = Form(...),
+    context: str = Form("speak"),
+    model_source: ModelSource = Form(ModelSource.AALAM),
+    language: str = Form("zh-CN"),
+    voice_name: str = Form("zh-CN-XiaoxiaoNeural"),
+    audio_format: str = Form("mp3"),
+    authorization: str = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Aalam endpoint that handles both STT and TTS in one call"""
+    verify_token(authorization)
+
+    try:
+        # Save uploaded audio file temporarily
+        temp_input_path = f"{TEMP_AUDIO_DIR}/{uuid.uuid4()}.wav"
+        with open(temp_input_path, "wb") as f:
+            content = await audio_file.read()
+            f.write(content)
+
+        # Step 1: Convert speech to text
+        transcript_result = await stt_transcribe(
+            temp_input_path,
+            language=language,
+            punctuate=True,
+            speaker_diarization=False,
+            word_timestamps=False
+        )
+        
+        # Step 2: Process with Aalam
+        system_prompt = generate_system_prompt(context, model_source)
+        response = openai.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": transcript_result["text"]},
+            ]
+        )
+        
+        message = response.choices[0].message.content
+        
+        # Step 3: Convert response to speech
+        audio_data = await tts_generate(
+            text=message,
+            voice_name=voice_name,
+            audio_format=audio_format,
+            speaking_rate=1.0,
+            pitch=0.0
+        )
+        
+        # Save response audio
+        temp_output_path = f"{TEMP_AUDIO_DIR}/{uuid.uuid4()}.{audio_format}"
+        with open(temp_output_path, "wb") as f:
+            f.write(audio_data)
+        
+        # Generate avatar video
+        avatar_result = await avatar_service.generate_avatar(
+            text=message,
+            voice_id=voice_name,
+            style="natural",
+            emotion="neutral"
+        )
+        
+        # Create response object
+        aalam_response = AalamResponse(
+            user_id=user_id,
+            context=context,
+            response=message,
+            source="📎 Aalam",
+            confidence=transcript_result["confidence"],
+            timestamp=datetime.utcnow(),
+            model_source=model_source,
+            metadata={
+                "input_audio": temp_input_path,
+                "output_audio": temp_output_path,
+                "transcription": transcript_result["text"],
+                "voice_used": voice_name,
+                "language": language
+            },
+            audio_file=temp_output_path,
+            transcription=transcript_result["text"],
+            avatar_url=avatar_result["video_url"],
+            avatar_metadata=avatar_result["metadata"]
+        )
+
+        # Log interactions
+        await log_to_room_127(user_id, context, aalam_response, db)
+        await log_to_codex(message, context)
+
+        return aalam_response
+
+    except Exception as e:
+        logger.error(f"Aalam conversation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Aalam conversation failed: {str(e)}")
+    finally:
+        # Clean up temporary files
+        try:
+            if os.path.exists(temp_input_path):
+                os.remove(temp_input_path)
+            if os.path.exists(temp_output_path):
+                os.remove(temp_output_path)
+        except Exception as e:
+            logger.error(f"Failed to clean up temporary files: {str(e)}")
+
+async def log_contradiction_resolution(
+    contradiction_id: str,
+    resolution: str,
+    user_id: str,
+    status: str,
+    details: Dict[str, Any]
+):
+    """Log contradiction resolution"""
+    try:
+        log_entry = {
+            "contradiction_id": contradiction_id,
+            "resolution": resolution,
+            "user_id": user_id,
+            "status": status,
+            "details": details,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        await redis_service.add_to_list("contradiction_logs", log_entry)
+        
+        # Also log as audit event
+        await redis_service.log_audit(
+            action="contradiction_resolution",
+            user_id=user_id,
+            details={
+                "contradiction_id": contradiction_id,
+                "resolution": resolution,
+                "status": status,
+                **details
+            }
+        )
+        logger.info(f"Logged contradiction resolution - ID: {contradiction_id}")
+    except Exception as e:
+        logger.error(f"Failed to log contradiction resolution: {str(e)}")

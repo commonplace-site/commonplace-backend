@@ -4,7 +4,7 @@ from typing import Optional, List, Dict, Set, Union, Any
 from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
-from fastapi import Depends, HTTPException, status, Security
+from fastapi import Depends, HTTPException, logger, status, Security
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext

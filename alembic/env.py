@@ -28,7 +28,7 @@ from app.models.ticket import Ticket, TicketComment, TicketHistory
 from app.models.chat_history import ChatHistory
 from app.models.arbitration import Arbitration
 from app.models.subai_log import SubAILog
-from app.models.user_consent import UserConsent
+from app.models.users import UserConsent
 
 # Load environment variables
 load_dotenv(dotenv_path="app/.env")

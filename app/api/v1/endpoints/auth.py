@@ -34,7 +34,7 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
     from app.models.role import UserRole
     user_role = UserRole(
         user_id=new_user.id,
-        role_id=1,  # Default role ID
+        role_id=3,  
         is_active=True
     )
     db.add(user_role)
