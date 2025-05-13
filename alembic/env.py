@@ -15,18 +15,20 @@ from app.models.lesson import Lesson
 from app.models.profile import Profile
 from app.models.pronunciation_log import PronunciationLog
 from app.models.roleplay_session import RolePlaySession
-# from app.models.scraped_content import ScrapedContent
+from app.models.scraped_content import ScrapedContent
 from app.models.scraping_source import ScrapingSource
 from app.models.vocabulary_log import VocabularyLog
-from app.models.role import Role
+from app.models.role import Role, UserRole, Permission
 from app.models.licenskey import LicenseKey
 from app.models.Diagnostic import DiagnosticResult
 from app.models.files import File
 from app.models.LanguageTest import LanguageTest
 from app.models.memory import UserProfile, ModuleState, CodexLog, Room127Log, DeveloperLog, AuditLog
-from app.models.ticket import Ticket
+from app.models.ticket import Ticket, TicketComment, TicketHistory
 from app.models.chat_history import ChatHistory
 from app.models.arbitration import Arbitration
+from app.models.subai_log import SubAILog
+from app.models.user_consent import UserConsent
 
 # Load environment variables
 load_dotenv(dotenv_path="app/.env")

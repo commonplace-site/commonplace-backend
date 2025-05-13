@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
 
-from app.core.rbac import require_permission, require_minimum_role_level
+from app.core.rbac import require_permission
 from app.db.dependencies import get_db
 from app.models.memory import UserProfile, ModuleState, CodexLog, Room127Log, DeveloperLog, AuditLog, UserRole
 from app.schemas.memory import (

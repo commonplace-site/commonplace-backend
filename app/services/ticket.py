@@ -6,7 +6,7 @@ from app.schemas.ticket import TicketCreate, TicketUpdate, TicketCommentCreate, 
 from app.core.security import get_current_user
 from app.core.rbac import check_permission
 from app.services.email import EmailService
-from app.models.user import User
+from app.models.users import User
 from uuid import uuid4
 
 class TicketService:

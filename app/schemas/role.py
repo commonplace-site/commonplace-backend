@@ -38,4 +38,9 @@ class UserRoleResponse(BaseModel):
     permissions: List[str]
 
     class Config:
-        from_attributes = True 
+        from_attributes = True
+
+# New model added after UserRoleUpdate
+class UserRoleCreate(BaseModel):
+    user_id: str
+    role_id: str 

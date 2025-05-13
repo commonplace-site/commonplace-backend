@@ -11,6 +11,6 @@ class SubAILog(BASE):
     prompt = Column(String, nullable=False)
     model = Column(String(50), nullable=False)
     response = Column(JSON, nullable=False)
-    metadata = Column(JSON)
+    subAi_metadata = Column(JSON)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now()) 

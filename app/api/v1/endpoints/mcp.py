@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 from datetime import datetime
-from app.db.database import get_db
+from app.db.dependencies import get_db
 from app.services.room127 import Room127Service
 from app.schemas.mcp import MCPContext, MCPEntry
 

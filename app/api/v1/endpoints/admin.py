@@ -8,7 +8,7 @@ from app.models.users import User, UserProfile, Role
 from app.models.learning_module import LearningModule
 from app.models.lesson import Lesson
 from app.schemas.files import FileOut
-from app.schemas.users import UserCreate, UserUpdate, UserResponse
+from app.schemas.user import UserCreate, UserUpdate, UserResponse
 from app.schemas.learning import ModuleCreate, ModuleUpdate, LessonCreate, LessonUpdate
 from uuid import UUID
 

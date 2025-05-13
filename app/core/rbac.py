@@ -1,7 +1,12 @@
 from typing import Dict, List, Optional
+from app.core.utils import get_current_user
+from app.db.dependencies import get_db
 from app.models.role import Role, Permission, UserRole
 from app.db.database import BASE
 from sqlalchemy.orm import Session
+from fastapi import Depends, HTTPException, status
+from app.services.rbac import RBACService
+# from app.db.database import get_db
 
 # Define default permissions
 DEFAULT_PERMISSIONS = {
@@ -126,4 +131,19 @@ def remove_role_from_user(user_id: str, role_id: str, db: Session) -> bool:
 def get_user_roles(user_id: str, db: Session) -> List[str]:
     """Get all roles for a user"""
     user_roles = db.query(UserRole).filter(UserRole.user_id == user_id).all()
-    return [ur.role_id for ur in user_roles] 
+    return [ur.role_id for ur in user_roles]
+
+def require_permission(resource: str, action: str):
+    """
+    FastAPI dependency that checks if the current user has the required permission.
+    Usage: Depends(require_permission("resource", "action"))
+    """
+    async def _require_permission(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+        rbac_service = RBACService(db)
+        if not rbac_service.check_permission(current_user["id"], resource, action):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Permission denied: {resource}:{action}"
+            )
+        return current_user
+    return _require_permission 

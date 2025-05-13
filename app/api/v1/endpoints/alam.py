@@ -507,6 +507,9 @@ async def aalam_tts_stt_endpoint(
     verify_token(authorization)
 
     try:
+        # Check if request is from subservient API
+        is_subservient = await check_subservient_api(authorization, db)
+        
         # First, transcribe the audio
         transcript_result = await stt_transcribe(
             data.audio_file,

@@ -3,6 +3,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.db.database import BASE
 from uuid import uuid4
+from sqlalchemy.dialects.postgresql import UUID
 
 # Association table for role permissions
 role_permissions = Table(
@@ -25,7 +26,7 @@ class Role(BASE):
 
     # Relationships
     permissions = relationship("Permission", secondary=role_permissions, back_populates="roles")
-    users = relationship("UserRole", back_populates="role")
+    user_roles = relationship("UserRole", back_populates="role")
 
 class Permission(BASE):
     __tablename__ = "permissions"
@@ -44,12 +45,13 @@ class UserRole(BASE):
     __tablename__ = "user_roles"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    user_id = Column(String(36), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     role_id = Column(String(36), ForeignKey("roles.id"), nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    role = relationship("Role", back_populates="users")
+    role = relationship("Role", back_populates="user_roles")
+    user = relationship("User", back_populates="user_roles")
 
