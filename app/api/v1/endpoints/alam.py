@@ -659,35 +659,102 @@ async def aalam_tts_stt_endpoint(
         logger.error(f"Aalam TTS-STT failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Aalam TTS-STT failed: {str(e)}")
 
+# @router.post("/aalam")
+# async def aalam_endpoint(
+#     data: AalamInput,
+#     authorization: str = Header(None),
+#     db: Session = Depends(get_db)
+# ):
+#     verify_token(authorization)
+
+#     try:
+#         # Check if request is from subservient API
+#         is_subservient = await check_subservient_api(authorization, db)
+        
+#         # Determine if this is a code-related query
+#         is_code_query = any(keyword in data.text.lower() for keyword in [
+#             'code', 'program', 'function', 'class', 'algorithm', 'implement',
+#             'python', 'javascript', 'java', 'c++', 'typescript', 'sql',
+#             'how to write', 'how to create', 'how to implement', 'create a',
+#             'build a', 'develop a', 'make a', 'show me', 'give me', 'write a'
+#         ])
+        
+#         # Set context to 'code' if it's a code-related query
+#         context = 'code' if is_code_query else data.context
+        
+#         # Generate system prompt based on mode
+#         system_prompt = generate_system_prompt(context, ModelSource.AALAM)
+        
+#         # Call OpenAI API to generate response
+#         response = openai.chat.completions.create(
+#             model="gpt-4",
+#             messages=[
+#                 {"role": "system", "content": system_prompt},
+#                 {"role": "user", "content": data.text},
+#             ]
+#         )
+        
+#         message = response.choices[0].message.content
+        
+#         # Create AalamResponse object with all required fields
+#         aalam_response = AalamResponse(
+#             user_id=data.user_id,
+#             context=context,
+#             response=message,
+#             source="📎 Aalam",
+#             confidence=1.0,
+#             timestamp=datetime.utcnow(),
+#             model_source=ModelSource.AALAM,
+#             metadata={
+#                 **(data.metadata or {}),
+#                 "is_code_response": is_code_query,
+#                 "language": "python" if "python" in data.text.lower() else 
+#                            "javascript" if "javascript" in data.text.lower() else
+#                            "java" if "java" in data.text.lower() else
+#                            "typescript" if "typescript" in data.text.lower() else
+#                            "sql" if "sql" in data.text.lower() else
+#                            "c++" if "c++" in data.text.lower() else
+#                            "unknown"
+#             }
+#         )
+
+#         # Log to Room 127
+#         await log_to_room_127(data.user_id, context, aalam_response, db)
+
+#         # Log to Codex for analysis
+#         await log_to_codex(message, context)
+
+#         # Add to suspense queue if needed
+#         if is_subservient:
+#             await add_to_suspense_queue(message)
+
+#         return aalam_response
+
+#     except Exception as e:
+#         logger.error(f"Aalam failed to respond: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Aalam failed to respond: {str(e)}")
+
+def generate_system_prompt(text: str) -> str:
+    if text == 'speak':
+        return 'You are Aalam, a language tutor focused on spoken fluency. Keep responses brief and conversational.'
+    elif text == 'write':
+        return 'You are Aalam, helping the user practice structured writing. Offer suggestions, feedback, and alternatives.'
+    elif text == 'explore':
+        return 'You are Aalam, guiding the user through new ideas and language discovery. Offer insightful, unexpected responses.'
+    else:
+        return 'You are Aalam, a helpful language guide.'
+
 @router.post("/aalam")
-async def aalam_endpoint(
-    data: AalamInput,
-    authorization: str = Header(None),
-    db: Session = Depends(get_db)
-):
-    verify_token(authorization)
+async def aalam_endpoint(data: AalamInput, authorization: str = Header(None)):
+    verify_token(authorization)  # Assuming the function verify_token exists
 
     try:
-        # Check if request is from subservient API
-        is_subservient = await check_subservient_api(authorization, db)
-        
-        # Determine if this is a code-related query
-        is_code_query = any(keyword in data.text.lower() for keyword in [
-            'code', 'program', 'function', 'class', 'algorithm', 'implement',
-            'python', 'javascript', 'java', 'c++', 'typescript', 'sql',
-            'how to write', 'how to create', 'how to implement', 'create a',
-            'build a', 'develop a', 'make a', 'show me', 'give me', 'write a'
-        ])
-        
-        # Set context to 'code' if it's a code-related query
-        context = 'code' if is_code_query else data.context
-        
         # Generate system prompt based on mode
-        system_prompt = generate_system_prompt(context, ModelSource.AALAM)
+        system_prompt = generate_system_prompt(data.text)
         
         # Call OpenAI API to generate response
         response = openai.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4",  # Or gpt-3.5-turbo based on your preference
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": data.text},
@@ -695,44 +762,17 @@ async def aalam_endpoint(
         )
         
         message = response.choices[0].message.content
-        
-        # Create AalamResponse object with all required fields
-        aalam_response = AalamResponse(
-            user_id=data.user_id,
-            context=context,
-            response=message,
-            source="📎 Aalam",
-            confidence=1.0,
-            timestamp=datetime.utcnow(),
-            model_source=ModelSource.AALAM,
-            metadata={
-                **(data.metadata or {}),
-                "is_code_response": is_code_query,
-                "language": "python" if "python" in data.text.lower() else 
-                           "javascript" if "javascript" in data.text.lower() else
-                           "java" if "java" in data.text.lower() else
-                           "typescript" if "typescript" in data.text.lower() else
-                           "sql" if "sql" in data.text.lower() else
-                           "c++" if "c++" in data.text.lower() else
-                           "unknown"
-            }
-        )
 
-        # Log to Room 127
-        await log_to_room_127(data.user_id, context, aalam_response, db)
-
-        # Log to Codex for analysis
-        await log_to_codex(message, context)
-
-        # Add to suspense queue if needed
-        if is_subservient:
-            await add_to_suspense_queue(message)
-
-        return aalam_response
+        # Return the response
+        return {
+            "user_id": data.user_id,
+            "context": data.context,
+            "response": message
+        }
 
     except Exception as e:
-        logger.error(f"Aalam failed to respond: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Aalam failed to respond: {str(e)}")
+
 
 @router.post("/aalam/vet")
 async def vet_content(

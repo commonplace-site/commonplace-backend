@@ -1,4 +1,10 @@
 from pydantic_settings import BaseSettings
+from enum import Enum
+
+class ModelSource(str, Enum):
+    AALAM = "aalam"
+    TEACHER = "teacher"
+    MODULE = "module"
 
 class Settings(BaseSettings):
     # AWS settings
@@ -7,11 +13,11 @@ class Settings(BaseSettings):
     AWS_REGION: str
     AWS_BUCKET_NAME: str
     
-    # Redis settings
-    REDIS_HOST: str = "localhost"
-    REDIS_PORT: int = 6379
-    REDIS_DB: int = 0
-    REDIS_PASSWORD: str = ""
+    # Redis settings (all optional with defaults)
+    REDIS_HOST: str | None = None
+    REDIS_PORT: int | None = None
+    REDIS_DB: int | None = None
+    REDIS_PASSWORD: str | None = None
     REDIS_SSL: bool = False
     
     # Audit logging settings
@@ -25,6 +31,14 @@ class Settings(BaseSettings):
     
     # OpenAI settings
     OPENAI_API_KEY: str
+    
+    # Aalam specific settings
+    AALAM_MODEL: str = "gpt-4"
+    AALAM_DEFAULT_CONTEXT: str = "speak"
+    AALAM_DEFAULT_VOICE: str = "zh-CN-XiaoxiaoNeural"
+    AALAM_DEFAULT_LANGUAGE: str = "zh-CN"
+    AALAM_DEFAULT_AUDIO_FORMAT: str = "mp3"
+    AALAM_TEMP_DIR: str = "temp_audio"
     
     # Service endpoints
     ROOM_127_ENDPOINT: str
