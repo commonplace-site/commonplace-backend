@@ -17,6 +17,7 @@ pydantic>=1.8.0
 ffmpeg-python
 jinja2==3.1.2
 # TTS and STT dependencies
+azure-cognitiveservices-speech==1.31.0
 edge-tts==6.1.9
 SpeechRecognition==3.10.0
 pydub==0.25.1
