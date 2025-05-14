@@ -11,6 +11,7 @@ class User(BASE):
     __tablename__ = 'users'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
     first_Name=Column(String(256), nullable=False)
     last_Name=Column(String(256), nullable=True)
     email = Column(String(150), unique=True, nullable=False)
@@ -24,9 +25,8 @@ class User(BASE):
     roleplay_sessions = relationship("RolePlaySession", back_populates="user")
     audio_files = relationship("AudioFile", back_populates="user")
     feedback_logs = relationship("FeedbackLog", back_populates="user")
-    role_id = Column(BigInteger, ForeignKey('roles.id'))
-    role = relationship("Role", back_populates="users")
-    files = relationship("FileMetadata", back_populates="user")
+    user_roles = relationship("UserRole", back_populates="user")
+    files = relationship("File", back_populates="user")
     license_keys = relationship("LicenseKey", back_populates="user")
     is_active = Column(Boolean, default=True)
     created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)

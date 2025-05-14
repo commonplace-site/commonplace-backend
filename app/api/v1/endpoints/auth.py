@@ -24,13 +24,23 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
         first_Name=user.first_Name,
         last_Name=user.last_Name,
         email=user.email,
-        password=hash_password(user.password),
-        role_id=1
+        password=hash_password(user.password)
     )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return {"msg": "User created", "role": new_user.role.name, "id": new_user.id,}
+    
+    # Create default user role
+    from app.models.role import UserRole
+    user_role = UserRole(
+        user_id=new_user.id,
+        role_id=3,  
+        is_active=True
+    )
+    db.add(user_role)
+    db.commit()
+    
+    return {"msg": "User created", "role": user_role.role.name, "id": new_user.id}
 
 # Login route
 @router.post("/login", response_model=Token)
@@ -38,13 +48,16 @@ def login(data: LoginSchema, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
     if not user or not verify_password(data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    if not user.role:
-        raise HTTPException(status_code=400, detail="User role not assigned")
-    # token = create_access_token({"sub": user.email, "role": user.role.name})
+    
+    # Get the active role for the user
+    active_role = next((ur.role for ur in user.user_roles if ur.is_active), None)
+    if not active_role:
+        raise HTTPException(status_code=400, detail="No active role assigned to user")
+    
     token = create_access_token({
-    "sub": user.email,
-    "role": user.role.name 
-})
+        "sub": user.email,
+        "role": active_role.name 
+    })
     return {"access_token": token, "token_type": "bearer"}
 
 # forgot_password route

@@ -1,28 +1,62 @@
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from typing import Optional
+from app.services.avatar import avatar_service
+from app.core.utils import get_current_user
+from app.models.users import User
 
-# from fastapi import APIRouter
+router = APIRouter(tags=["Avatar Generation"])
 
-# router = APIRouter(
-#     # prefix="/user",
-#     tags=["User"]
-# )
+class AvatarRequest(BaseModel):
+    text: str
+    voice_id: str
+    style: Optional[str] = "natural"
+    emotion: Optional[str] = "neutral"
+    background: Optional[str] = None
 
+class AvatarResponse(BaseModel):
+    video_url: str
+    duration: float
+    metadata: dict
 
-# # Set your OpenAI API key here
-# openai.api_key = "your-openai-api-key"
+@router.post("/avatar/generate", response_model=AvatarResponse)
+async def generate_avatar(
+    request: AvatarRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Generate an avatar video with synchronized speech
+    """
+    try:
+        result = await avatar_service.generate_avatar(
+            text=request.text,
+            voice_id=request.voice_id,
+            style=request.style,
+            emotion=request.emotion,
+            background=request.background
+        )
+        
+        return AvatarResponse(
+            video_url=result["video_url"],
+            duration=result["duration"],
+            metadata=result["metadata"]
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-# @router.post("/avatar/")
-# async def avatar_generate(text: str = Form(...), current_user: User = Depends(get_current_user)):
-#     # Communicate with ChatGPT
-#     response = openai.ChatCompletion.create(
-#         model="gpt-4",  # or "gpt-3.5-turbo"
-#         messages=[
-#             {"role": "system", "content": "You are a helpful, human-like avatar assistant."},
-#             {"role": "user", "content": text}
-#         ]
-#     )
-    
-#     reply = response['choices'][0]['message']['content']
-#     return {"reply": reply}
+@router.get("/avatar/list")
+async def list_avatars(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get list of available avatars
+    """
+    try:
+        avatars = await avatar_service.get_available_avatars()
+        return avatars
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 

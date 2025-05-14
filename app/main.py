@@ -4,13 +4,14 @@ from fastapi import FastAPI ,APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from app.api.v1 import router as all_routes
+from app.api.v1.endpoints import memory, subai
 
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 1))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 120))
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 SYNESTHESIA_API_KEY = os.getenv("SYNESTHESIA_API_KEY")
 
@@ -44,6 +45,8 @@ app.add_middleware(
 # app.include_router(auth.router,prefix='/auth',tags=["Auth"])
 # app.include_router(users.router,prefix="/users",tags=["Users"])
 app.include_router(all_routes,prefix="/api")
+app.include_router(memory.router, prefix="/api/v1/memory", tags=["memory"])
+app.include_router(subai.router, prefix="/api/v1", tags=["Sub-AI"])
 
 @app.get("/")
 def read_root():
