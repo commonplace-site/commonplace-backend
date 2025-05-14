@@ -96,8 +96,8 @@ class Permission(BASE):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     name = Column(String(50), unique=True, nullable=False)
     description = Column(String(200))
-    resource = Column(String(50), nullable=False)  # e.g., "module", "profile", "log"
-    action = Column(String(50), nullable=False)    # e.g., "create", "read", "update", "delete"
+    resource = Column(String(50), nullable=False) 
+    action = Column(String(50), nullable=False)   
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships

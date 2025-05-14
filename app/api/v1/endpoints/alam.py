@@ -396,7 +396,7 @@ async def get_arbitration_status(
             model_source=ModelSource(arbitration.model_source),
             status=SubmissionStatus(arbitration.status),
             review_notes=arbitration.review_notes,
-            metadata=arbitration.metadata,
+            metadata=arbitration.arbitration_metadata,
             timestamp=arbitration.created_at,
             reviewed_by=arbitration.reviewed_by,
             reviewed_at=arbitration.reviewed_at
@@ -434,7 +434,7 @@ async def review_arbitration(
             model_source=ModelSource(arbitration.model_source),
             status=status,
             review_notes=review_notes,
-            metadata=arbitration.metadata,
+            metadata=arbitration.arbitration_metadata,
             timestamp=arbitration.created_at,
             reviewed_by=arbitration.reviewed_by,
             reviewed_at=arbitration.reviewed_at
@@ -872,7 +872,7 @@ async def get_chat(
             context=chat.context,
             model_source=ModelSource(chat.model_source),
             messages=[Message(**msg) for msg in chat.messages],
-            metadata=chat.metadata,
+            metadata=chat.chat_metadata,
             created_at=chat.created_at,
             updated_at=chat.updated_at,
             is_archived=bool(chat.is_archived),
@@ -906,7 +906,7 @@ async def list_chats(
                 context=chat.context,
                 model_source=ModelSource(chat.model_source),
                 messages=[Message(**msg) for msg in chat.messages],
-                metadata=chat.metadata,
+                metadata=chat.chat_metadata,
                 created_at=chat.created_at,
                 updated_at=chat.updated_at,
                 is_archived=bool(chat.is_archived),
@@ -917,6 +917,8 @@ async def list_chats(
     except Exception as e:
         logger.error(f"Failed to list chats: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to list chats: {str(e)}")
+
+
 
 @router.put("/aalam/chats/{chat_id}", response_model=ChatHistoryResponse)
 async def update_chat(
@@ -938,7 +940,7 @@ async def update_chat(
         if update.messages is not None:
             chat.messages = [msg.dict() for msg in update.messages]
         if update.metadata is not None:
-            chat.metadata = update.metadata
+            chat.chat_metadata = update.metadata
         if update.is_archived is not None:
             chat.is_archived = int(update.is_archived)
             
@@ -952,7 +954,7 @@ async def update_chat(
             context=chat.context,
             model_source=ModelSource(chat.model_source),
             messages=[Message(**msg) for msg in chat.messages],
-            metadata=chat.metadata,
+            metadata=chat.chat_metadata,
             created_at=chat.created_at,
             updated_at=chat.updated_at,
             is_archived=bool(chat.is_archived),
