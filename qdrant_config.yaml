@@ -1,0 +1,53 @@
+storage:
+  # Storage path for Qdrant data
+  storage_path: "./qdrant_storage"
+  
+  # Optimize storage for production
+  optimizers:
+    indexing_threshold: 20000
+    memmap_threshold: 50000
+    max_optimization_threads: 2
+
+service:
+  # Host and port configuration
+  host: 0.0.0.0
+  port: 6333
+  http_port: 6334
+
+  # Enable CORS for your domain
+  cors:
+    allowed_origins:
+      - "*"  # Replace with your actual domain in production
+
+  # Enable authentication (recommended for production)
+  api_key: "${QDRANT_API_KEY}"  # Set this in your environment variables
+
+  # Performance settings
+  max_request_size_mb: 32
+  max_workers: 4
+
+  # Logging configuration
+  log_level: INFO
+  log_path: "./qdrant_logs"
+
+  # Metrics and monitoring
+  metrics:
+    enabled: true
+    host: 0.0.0.0
+    port: 9090
+
+  # Snapshot configuration
+  snapshots:
+    path: "./qdrant_snapshots"
+    interval: 3600  # Take snapshots every hour
+
+  # Recovery settings
+  recovery:
+    enabled: true
+    max_retries: 3
+    retry_interval: 5
+
+  # Cache settings
+  cache:
+    size: 1000  # Number of vectors to cache
+    ttl: 3600   # Cache TTL in seconds 

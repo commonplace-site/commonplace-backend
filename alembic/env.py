@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 from app.db.database import BASE
-from app.models.users import User
+from app.models.users import User, UserConsent
 from app.models.audio_file import AudioFile
 from app.models.comprehension_log import ComprehensionLog
 from app.models.feedback_log import FeedbackLog
@@ -12,7 +12,6 @@ from app.models.grammar_log import GrammarLog
 from app.models.integration import Integration
 from app.models.learning_module import LearningModule
 from app.models.lesson import Lesson
-from app.models.profile import Profile
 from app.models.pronunciation_log import PronunciationLog
 from app.models.roleplay_session import RolePlaySession
 from app.models.scraped_content import ScrapedContent
@@ -23,18 +22,19 @@ from app.models.licenskey import LicenseKey
 from app.models.Diagnostic import DiagnosticResult
 from app.models.files import File
 from app.models.LanguageTest import LanguageTest
-from app.models.memory import UserProfile, ModuleState, CodexLog, Room127Log, DeveloperLog, AuditLog
-from app.models.ticket import Ticket, TicketComment, TicketHistory
+from app.models.memory import UserProfile, ModuleState, CodexLog, Room127Log, DeveloperLog, AuditLog, Memory, Business
+from app.models.ticket_models import Ticket, TicketComment, TicketHistory
 from app.models.chat_history import ChatHistory
 from app.models.arbitration import Arbitration
 from app.models.subai_log import SubAILog
-from app.models.users import UserConsent
+from app.models.activity import Activity
 
 # Load environment variables
-load_dotenv(dotenv_path="app/.env")
+# DATABASE_URL="postgresql://commonplace_pdm3_user:oZkVyRxuB7GcFbYrzJQqCU815pwNfTSU@dpg-d01j9hadbo4c738qlva0-a.oregon-postgres.render.com/commonplace_pdm3?sslmode=require"
+DATABASE_URL="postgresql://postgres:junaid@localhost:5432/commonplace"
 
 # Get database URL from environment
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL","postgresql://postgres:junaid@localhost:5432/commonplace")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL not set in .env")
 

@@ -1,11 +1,13 @@
 from typing import Dict, Set
 from uuid import uuid4
+import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.core.utils import create_access_token, create_reset_token, get_current_token, get_current_user, hash_password, role_required, verify_password, verify_reset_token
 from app.db.dependencies import get_db
+from app.models.role import Role, UserRole
 from app.models.users import User
 from app.schemas.user import ForgotPasswordRequest, LoginSchema, ResetPasswordRequest, Token, UserCreate
 
@@ -21,6 +23,7 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already exists")
 
     new_user = User(
+        id=uuid.uuid4(),
         first_Name=user.first_Name,
         last_Name=user.last_Name,
         email=user.email,
@@ -30,20 +33,22 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     
-    # Create default user role
-    from app.models.role import UserRole
+    role_obj = db.query(Role).filter(Role.name == user.role.upper()).first()
+    if not role_obj:
+      raise HTTPException(status_code=400, detail=f"Invalid role: {user.role}")
+
     user_role = UserRole(
         user_id=new_user.id,
-        role_id=3,  
-        is_active=True
+        role_id=role_obj.id,
+        # is_active=True
     )
     db.add(user_role)
     db.commit()
     
-    return {"msg": "User created", "role": user_role.role.name, "id": new_user.id}
+    return {"msg": "User created", "role": user_role.role.name, "id": new_user.id,"email":new_user.email,"full_Name": new_user.first_Name + " " + new_user.last_Name}
 
 # Login route
-@router.post("/login", response_model=Token)
+@router.post("/login")
 def login(data: LoginSchema, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
     if not user or not verify_password(data.password, user.password):
@@ -58,7 +63,7 @@ def login(data: LoginSchema, db: Session = Depends(get_db)):
         "sub": user.email,
         "role": active_role.name 
     })
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer","user":{"id":user.id,"email":user.email,"full_Name": user.first_Name + " " + user.last_Name,"expire":300, "role": active_role.name,}}
 
 # forgot_password route
 @router.post("/forgot-password")

@@ -1,7 +1,9 @@
-from .database import SessionLocal
+from typing import Generator
 from sqlalchemy.orm import Session
+from app.db.database import SessionLocal
 
-def get_db():
+def get_db() -> Generator[Session, None, None]:
+    """Dependency for getting database session"""
     db = SessionLocal()
     try:
         yield db

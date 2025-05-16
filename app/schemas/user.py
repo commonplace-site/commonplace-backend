@@ -2,14 +2,21 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
+from uuid import UUID
+
+# class UserCreate(BaseModel):
+#     first_Name: str
+#     last_Name: str
+#     email: EmailStr
+#     password: str
 
 class UserCreate(BaseModel):
-    first_Name: str
-    last_Name: str
+    first_Name: Optional[str]
+    last_Name: Optional[str]
     email: EmailStr
     password: str
-
-
+    role: Optional[str] = "STUDENT"
+    metadata: Optional[dict] = {}
 
 class Token(BaseModel):
     access_token: str
@@ -164,3 +171,31 @@ class ChatMessageResponse(BaseModel):
     response: Message
     metadata: Dict[str, Any]
     timestamp: datetime
+
+class UserSchema(BaseModel):
+    """User schema."""
+    id: UUID
+    email: str
+    is_active: bool
+    is_superuser: bool
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        """Pydantic config."""
+        from_attributes = True
+
+
+class UserProfileSchema(BaseModel):
+    """User profile schema."""
+    user_id: UUID
+    business_id: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        """Pydantic config."""
+        from_attributes = True
