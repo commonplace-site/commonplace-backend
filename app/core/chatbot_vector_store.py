@@ -14,15 +14,14 @@ class ChatbotVectorStore:
             self.client = QdrantClient(
                 url=settings.QDRANT_URL,
                 api_key=settings.QDRANT_API_KEY,
-                timeout=10.0,  # 10 seconds timeout
-                retries=3      # Retry failed requests 3 times
+                timeout=settings.QDRANT_TIMEOUT
             )
             # Using a multilingual model for better language support
             self.embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
             self._init_collections()
-            logger.info("Successfully initialized ChatbotVectorStore with cloud configuration")
+            logger.info("Successfully connected to Qdrant")
         except Exception as e:
-            logger.error(f"Failed to initialize ChatbotVectorStore: {str(e)}")
+            logger.error(f"Failed to connect to Qdrant: {str(e)}")
             raise
 
     def _init_collections(self):

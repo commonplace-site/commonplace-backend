@@ -2,6 +2,10 @@ from pydantic_settings import BaseSettings
 from enum import Enum
 from typing import Optional
 from functools import lru_cache
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class ModelSource(str, Enum):
     AALAM = "aalam"
@@ -25,7 +29,7 @@ class Settings(BaseSettings):
 
 
     # OpenAI
-    OPENAI_API_KEY: str
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     
     # AWS Settings (Optional)
     AWS_ACCESS_KEY_ID: Optional[str] = None
@@ -45,8 +49,9 @@ class Settings(BaseSettings):
     DB_DATABASE: Optional[str] = None
     
     # Qdrant Settings
-    QDRANT_URL: str = "http://localhost:6333"
-    QDRANT_API_KEY: Optional[str] = None
+    QDRANT_URL: str = os.getenv("QDRANT_URL", "http://localhost:6333")
+    QDRANT_API_KEY: Optional[str] = os.getenv("QDRANT_API_KEY")
+    QDRANT_TIMEOUT: float = float(os.getenv("QDRANT_TIMEOUT", "10.0"))
     
     # Redis Settings
     REDIS_HOST: str = "localhost"
@@ -79,7 +84,7 @@ class Settings(BaseSettings):
     SUSPENSE_QUEUE_ENDPOINT: str
     
     # Database settings
-    DATABASE_URL: str = "postgresql://user:pass@localhost:5432/aalam"
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://commonplace_pdm3_user:password@dpg-d01j9hadbo4c738qlva0-a.oregon-postgres.render.com/commonplace_pdm3")
     POOL_SIZE: int = 20
     MAX_OVERFLOW: int = 10
     
@@ -98,6 +103,13 @@ class Settings(BaseSettings):
     # Security
     CORS_METHODS: list = ["*"]
     CORS_HEADERS: list = ["*"]
+    
+    # JWT settings
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "your-secret-key")
+    JWT_ALGORITHM: str = "HS256"
+    
+    # Other settings
+    DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     
     class Config:
         case_sensitive = True

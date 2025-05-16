@@ -30,13 +30,12 @@ from app.models.subai_log import SubAILog
 from app.models.activity import Activity
 
 # Load environment variables
-# DATABASE_URL="postgresql://commonplace_pdm3_user:oZkVyRxuB7GcFbYrzJQqCU815pwNfTSU@dpg-d01j9hadbo4c738qlva0-a.oregon-postgres.render.com/commonplace_pdm3?sslmode=require"
-DATABASE_URL="postgresql://postgres:junaid@localhost:5432/commonplace"
+load_dotenv()
 
 # Get database URL from environment
-DATABASE_URL = os.getenv("DATABASE_URL","postgresql://postgres:junaid@localhost:5432/commonplace")
+DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
-    raise ValueError("DATABASE_URL not set in .env")
+    raise ValueError("DATABASE_URL not set in environment variables")
 
 # this is the Alembic Config object
 config = context.config

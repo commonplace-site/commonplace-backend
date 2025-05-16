@@ -111,7 +111,7 @@ class UserRole(str, enum.Enum):
     MODERATOR = "moderator"
 
 # Temporarily commented out Memory model and its relationships
-"""
+
 class Memory(BASE):
     __tablename__ = "memories"
 
@@ -137,7 +137,7 @@ class Memory(BASE):
         back_populates="memories",
         viewonly=True
     )
-"""
+
 
 class Business(BASE):
     __tablename__ = "businesses"
@@ -156,7 +156,7 @@ class Business(BASE):
     activities = relationship("Activity", back_populates="business")
 
 # Temporarily commented out UserProfile model and its relationships
-"""
+
 class UserProfile(BASE):
     __tablename__ = "user_profiles"
     __table_args__ = {"extend_existing": True}
@@ -210,7 +210,7 @@ class UserProfile(BASE):
         primaryjoin="UserProfile.user_id == AuditLog.user_id",
         viewonly=True
     )
-"""
+
 
 class MemorySchema(BaseModel):
     id: UUIDType = Field(default_factory=uuid4)

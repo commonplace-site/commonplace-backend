@@ -1,8 +1,9 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
+from app.core.utils import get_current_user
 from app.schemas.memory import MemoryCreate, MemoryRead, MemoryQuery, MemoryResponse
 from app.services.memory_service import MemoryService
-from app.core.auth import get_current_user
+
 
 router = APIRouter()
 memory_service = MemoryService()
