@@ -4178,4 +4178,4 @@ sphinx-rtd-theme = "*"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4"
-content-hash = "bb4ebf25b2fd15506bc49a8e348bd577f0266fef93b00532926529c73fde7684"
+content-hash = "4cbc1c2669387e362a2a86c074a37c8bdb3835d3d9e8dae2ff57956c712bd622"
