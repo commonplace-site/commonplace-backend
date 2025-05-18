@@ -84,7 +84,7 @@ class Settings(BaseSettings):
     SUSPENSE_QUEUE_ENDPOINT: str
     
     # Database settings
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://commonplace_pdm3_user:password@dpg-d01j9hadbo4c738qlva0-a.oregon-postgres.render.com/commonplace_pdm3")
+    DATABASE_URL: str = os.getenv("DATABASE_URL")
     POOL_SIZE: int = 20
     MAX_OVERFLOW: int = 10
     
