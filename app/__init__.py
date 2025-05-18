@@ -1,1 +1,0 @@
-ls -la && PYTHONPATH=/opt/render/project/src poetry run uvicorn app.main:app --host=0.0.0.0 --port=10000
