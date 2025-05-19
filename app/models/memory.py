@@ -112,31 +112,31 @@ class UserRole(str, enum.Enum):
 
 # Temporarily commented out Memory model and its relationships
 
-class Memory(BASE):
-    __tablename__ = "memories"
+# class Memory(BASE):
+#     __tablename__ = "memories"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    business_id = Column(String(36), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    type = Column(Enum(MemoryType), nullable=False)
-    tags = Column(ARRAY(String), default=list)
-    content = Column(Text, nullable=False)
-    embedding = Column(ARRAY(Float), nullable=True)
-    date = Column(DateTime(timezone=True), default=datetime.utcnow)
-    memory_metadata = Column(JSON, default=dict)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+#     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+#     business_id = Column(String(36), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
+#     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+#     type = Column(Enum(MemoryType), nullable=False)
+#     tags = Column(ARRAY(String), default=list)
+#     content = Column(Text, nullable=False)
+#     embedding = Column(ARRAY(Float), nullable=True)
+#     date = Column(DateTime(timezone=True), default=datetime.utcnow)
+#     memory_metadata = Column(JSON, default=dict)
+#     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+#     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationships
-    user = relationship("User", back_populates="memories")
-    business = relationship("Business", back_populates="memories")
-    user_profile = relationship(
-        "UserProfile", 
-        primaryjoin="and_(Memory.user_id == foreign(UserProfile.user_id), "
-                   "Memory.business_id == foreign(UserProfile.business_id))",
-        back_populates="memories",
-        viewonly=True
-    )
+#     # Relationships
+#     user = relationship("User", back_populates="memories")
+#     business = relationship("Business", back_populates="memories")
+#     user_profile = relationship(
+#         "UserProfile", 
+#         primaryjoin="and_(Memory.user_id == foreign(UserProfile.user_id), "
+#                    "Memory.business_id == foreign(UserProfile.business_id))",
+#         back_populates="memories",
+#         viewonly=True
+#     )
 
 
 class Business(BASE):
@@ -157,59 +157,59 @@ class Business(BASE):
 
 # Temporarily commented out UserProfile model and its relationships
 
-class UserProfile(BASE):
-    __tablename__ = "user_profiles"
-    __table_args__ = {"extend_existing": True}
+# class UserProfile(BASE):
+#     __tablename__ = "user_profiles"
+#     __table_args__ = {"extend_existing": True}
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
-    business_id = Column(String(36), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
-    role = Column(Enum(UserRole), nullable=False, default=UserRole.STUDENT)
-    first_name = Column(String(100), nullable=True)
-    last_name = Column(String(100), nullable=True)
-    phone = Column(String(20), nullable=True)
-    preferences = Column(JSON, default=dict)
-    meta_data = Column(JSON, default=dict)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
-    last_active = Column(DateTime(timezone=True), default=datetime.utcnow)
-    is_active = Column(Boolean, default=True)
+#     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+#     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+#     business_id = Column(String(36), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
+#     role = Column(Enum(UserRole), nullable=False, default=UserRole.STUDENT)
+#     first_name = Column(String(100), nullable=True)
+#     last_name = Column(String(100), nullable=True)
+#     phone = Column(String(20), nullable=True)
+#     preferences = Column(JSON, default=dict)
+#     meta_data = Column(JSON, default=dict)
+#     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+#     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+#     last_active = Column(DateTime(timezone=True), default=datetime.utcnow)
+#     is_active = Column(Boolean, default=True)
 
-    # Relationships
-    user = relationship("User", back_populates="profile", uselist=False)
-    business = relationship("Business", back_populates="users")
-    memories = relationship(
-        "Memory", 
-        primaryjoin="and_(UserProfile.user_id == foreign(Memory.user_id), "
-                    "UserProfile.business_id == foreign(Memory.business_id))",
-        back_populates="user_profile",
-        viewonly=True
-    )
-    room127_logs = relationship(
-        "Room127Log", 
-        primaryjoin="UserProfile.user_id == Room127Log.user_id",
-        viewonly=True
-    )
-    module_states = relationship(
-        "ModuleState", 
-        primaryjoin="UserProfile.user_id == ModuleState.user_id",
-        viewonly=True
-    )
-    codex_logs = relationship(
-        "CodexLog", 
-        primaryjoin="UserProfile.user_id == CodexLog.user_id",
-        viewonly=True
-    )
-    developer_logs = relationship(
-        "DeveloperLog", 
-        primaryjoin="UserProfile.user_id == DeveloperLog.user_id",
-        viewonly=True
-    )
-    audit_logs = relationship(
-        "AuditLog", 
-        primaryjoin="UserProfile.user_id == AuditLog.user_id",
-        viewonly=True
-    )
+#     # Relationships
+#     user = relationship("User", back_populates="profile", uselist=False)
+#     business = relationship("Business", back_populates="users")
+#     memories = relationship(
+#         "Memory", 
+#         primaryjoin="and_(UserProfile.user_id == foreign(Memory.user_id), "
+#                     "UserProfile.business_id == foreign(Memory.business_id))",
+#         back_populates="user_profile",
+#         viewonly=True
+#     )
+#     room127_logs = relationship(
+#         "Room127Log", 
+#         primaryjoin="UserProfile.user_id == Room127Log.user_id",
+#         viewonly=True
+#     )
+#     module_states = relationship(
+#         "ModuleState", 
+#         primaryjoin="UserProfile.user_id == ModuleState.user_id",
+#         viewonly=True
+#     )
+#     codex_logs = relationship(
+#         "CodexLog", 
+#         primaryjoin="UserProfile.user_id == CodexLog.user_id",
+#         viewonly=True
+#     )
+#     developer_logs = relationship(
+#         "DeveloperLog", 
+#         primaryjoin="UserProfile.user_id == DeveloperLog.user_id",
+#         viewonly=True
+#     )
+#     audit_logs = relationship(
+#         "AuditLog", 
+#         primaryjoin="UserProfile.user_id == AuditLog.user_id",
+#         viewonly=True
+#     )
 
 
 class MemorySchema(BaseModel):

@@ -1,6 +1,7 @@
 [tool.poetry]
-name = "commonplace"
+name = "commonplace-backend"
 version = "0.1.0"
+packages = [{ include = "app" }]
 description = ""
 authors = ["junaid114 <junaid8597@gmail.com>"]
 readme = "README.md"
