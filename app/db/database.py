@@ -18,11 +18,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+# Database URL configuration
+DATABASE_URL = "postgresql://commonplace_pdm3_user:oZkVyRxuB7GcFbYrzJQqCU815pwNfTSU@dpg-d01j9hadbo4c738qlva0-a.oregon-postgres.render.com/commonplace_pdm3"
 
-DATABASE_URL = os.getenv("DATABASE_URL","postgresql://commonplace_pdm3_user:oZkVyRxuB7GcFbYrzJQqCU815pwNfTSU@dpg-d01j9hadbo4c738qlva0-a.oregon-postgres.render.com/commonplace_pdm3")
-if not DATABASE_URL:
-    print("WARNING: DATABASE_URL environment variable not set. Using default SQLite database.")
-
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL ,pool_size=5,max_overflow=10)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 BASE = declarative_base()
