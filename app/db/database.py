@@ -19,10 +19,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL","postgresql://commonplace_pdm3_user:oZkVyRxuB7GcFbYrzJQqCU815pwNfTSU@dpg-d01j9hadbo4c738qlva0-a.oregon-postgres.render.com/commonplace_pdm3")
 if not DATABASE_URL:
     print("WARNING: DATABASE_URL environment variable not set. Using default SQLite database.")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+BASE = declarative_base()
