@@ -8,8 +8,8 @@ from app.models.users import User, UserProfile, UserConsent
 from app.models.learning_module import LearningModule
 from app.models.lesson import Lesson
 from app.models.audio_file import AudioFile
-from app.schemas.learning import ModuleResponse, LessonResponse
 from app.schemas.files import FileOut
+from app.schemas.learning import ModuleResponse, LessonResponse
 from app.services.s3 import upload_to_s3
 
 router = APIRouter(
