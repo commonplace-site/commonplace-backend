@@ -1,23 +1,30 @@
 from datetime import datetime
+from typing import Optional
 import uuid
+from uuid import UUID as UUIDType
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import JSON, TIMESTAMP, UUID, BigInteger, Boolean, Column, ForeignKey, Integer,String, Text
+from sqlalchemy import JSON, TIMESTAMP, BigInteger, Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from app.db.database import BASE
+from app.models.ticket_models import Ticket
 from sqlalchemy.orm import relationship
-
+from pydantic import BaseModel
+import sqlalchemy as sa
 
 
 class User(BASE):
     __tablename__ = 'users'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-
-    first_Name=Column(String(256), nullable=False)
-    last_Name=Column(String(256), nullable=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=sa.text('gen_random_uuid()'))
+    first_Name = Column(String(256), nullable=False)
+    last_Name = Column(String(256), nullable=True)
     email = Column(String(150), unique=True, nullable=False)
     password = Column(String(256), nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    profile = relationship("Profile", back_populates='user', uselist=False)
+    # Relationships
+    # profile = relationship("UserProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     vocabulary_logs = relationship("VocabularyLog", back_populates="user")
     grammar_logs = relationship("GrammarLog", back_populates="user")
     pronunciation_logs = relationship("PronunciationLog", back_populates="user")
@@ -25,6 +32,8 @@ class User(BASE):
     roleplay_sessions = relationship("RolePlaySession", back_populates="user")
     audio_files = relationship("AudioFile", back_populates="user")
     feedback_logs = relationship("FeedbackLog", back_populates="user")
+    # memories = relationship("Memory", back_populates="user", cascade="all, delete-orphan")
+    audit_logs = relationship("AuditLog", back_populates="user")
     user_roles = relationship("UserRole", back_populates="user")
     files = relationship("File", back_populates="user")
     license_keys = relationship("LicenseKey", back_populates="user")
@@ -36,8 +45,35 @@ class User(BASE):
 
 class UserConsent(BASE):
     __tablename__ = "user_consent"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=sa.text('gen_random_uuid()'))
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
     consent_given = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
     updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class UserSchema(BaseModel):
+    """User schema."""
+    id: UUIDType
+    email: str
+    is_active: bool
+    is_superuser: bool
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class UserProfileSchema(BaseModel):
+    """User profile schema."""
+    user_id: UUIDType
+    business_id: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True

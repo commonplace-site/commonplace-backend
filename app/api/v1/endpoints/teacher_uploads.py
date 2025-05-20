@@ -9,7 +9,7 @@ from app.models.learning_module import LearningModule
 from app.models.lesson import Lesson
 from app.models.users import User, UserProfile
 from app.schemas.files import FileOut
-from app.schemas.learning import ModuleCreate, ModuleUpdate, LessonCreate, LessonUpdate
+from app.schemas.learning import ModuleCreate, ModuleUpdate, LessonCreate, LessonUpdate # type: ignore
 from app.services.s3 import upload_to_s3
 
 router = APIRouter(
@@ -58,27 +58,27 @@ async def get_private_audios(
     return query.all()
 
 # Student Management
-@router.get("/students", response_model=List[UserProfile])
-async def get_students(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Teacher"))
-):
-    """Get list of students"""
-    return db.query(UserProfile).join(User).filter(User.role == "Student").offset(skip).limit(limit).all()
+# @router.get("/students", response_model=List[UserProfile])
+# async def get_students(
+#     skip: int = 0,
+#     limit: int = 100,
+#     db: Session = Depends(get_db),
+#     current_user: dict = Depends(role_required("Teacher"))
+# ):
+#     """Get list of students"""
+#     return db.query(UserProfile).join(User).filter(User.role == "Student").offset(skip).limit(limit).all()
 
-@router.get("/students/{student_id}", response_model=UserProfile)
-async def get_student(
-    student_id: UUID,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Teacher"))
-):
-    """Get student details"""
-    student = db.query(UserProfile).filter(UserProfile.user_id == student_id).first()
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
-    return student
+# @router.get("/students/{student_id}", response_model=UserProfile)
+# async def get_student(
+#     student_id: UUID,
+#     db: Session = Depends(get_db),
+#     current_user: dict = Depends(role_required("Teacher"))
+# ):
+#     """Get student details"""
+#     student = db.query(UserProfile).filter(UserProfile.user_id == student_id).first()
+#     if not student:
+#         raise HTTPException(status_code=404, detail="Student not found")
+#     return student
 
 # Content Management
 @router.post("/modules", response_model=ModuleCreate)
@@ -145,32 +145,32 @@ async def update_lesson(
     db.refresh(db_lesson)
     return db_lesson
 
-# Progress Tracking
-@router.get("/student-progress/{student_id}")
-async def get_student_progress(
-    student_id: UUID,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Teacher"))
-):
-    """Get student's learning progress"""
-    student = db.query(UserProfile).filter(UserProfile.user_id == student_id).first()
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
+# # Progress Tracking
+# @router.get("/student-progress/{student_id}")
+# async def get_student_progress(
+#     student_id: UUID,
+#     db: Session = Depends(get_db),
+#     current_user: dict = Depends(role_required("Teacher"))
+# ):
+#     """Get student's learning progress"""
+#     student = db.query(UserProfile).filter(UserProfile.user_id == student_id).first()
+#     if not student:
+#         raise HTTPException(status_code=404, detail="Student not found")
     
-    # Get completed lessons
-    completed_lessons = db.query(Lesson).filter(
-        Lesson.id.in_(student.completed_lessons)
-    ).all()
+#     # Get completed lessons
+#     completed_lessons = db.query(Lesson).filter(
+#         Lesson.id.in_(student.completed_lessons)
+#     ).all()
     
-    # Get audio submissions
-    audio_submissions = db.query(AudioFile).filter(
-        AudioFile.user_id == student_id
-    ).all()
+#     # Get audio submissions
+#     audio_submissions = db.query(AudioFile).filter(
+#         AudioFile.user_id == student_id
+#     ).all()
     
-    return {
-        "student": student,
-        "completed_lessons": len(completed_lessons),
-        "total_lessons": db.query(Lesson).count(),
-        "audio_submissions": len(audio_submissions),
-        "average_score": sum(a.rubric_score or 0 for a in audio_submissions) / len(audio_submissions) if audio_submissions else 0
-    }
+#     return {
+#         "student": student,
+#         "completed_lessons": len(completed_lessons),
+#         "total_lessons": db.query(Lesson).count(),
+#         "audio_submissions": len(audio_submissions),
+#         "average_score": sum(a.rubric_score or 0 for a in audio_submissions) / len(audio_submissions) if audio_submissions else 0
+#     }

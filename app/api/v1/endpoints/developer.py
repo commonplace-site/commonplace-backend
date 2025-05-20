@@ -1,3 +1,4 @@
+import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from requests import Session
 
@@ -15,6 +16,7 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already exists")
 
     new_user = User(
+        id=uuid.uuid4(),
         first_Name=user.first_Name,
         last_Name=user.last_Name,
         email=user.email,

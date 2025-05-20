@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.utils import role_required, get_current_user, verify_token
 from app.db.dependencies import get_db
 from app.models.audio_file import AudioFile
-from app.models.users import User, UserProfile, Role
+from app.models.users import User,Role
 from app.models.learning_module import LearningModule
 from app.models.lesson import Lesson
 from app.schemas.files import FileOut

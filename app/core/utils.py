@@ -26,7 +26,7 @@ from app.core.source_registry import SourceRegistry, SourceType
 load_dotenv() 
 
 # Load environment variables
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 120))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 300))
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 SECRET_KEY = os.getenv("SECRET_KEY", "your-default-secret")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")

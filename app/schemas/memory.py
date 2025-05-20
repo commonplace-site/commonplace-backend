@@ -133,4 +133,30 @@ class AuditLogResponse(AuditLogBase):
     created_at: datetime
 
     class Config:
-        from_attributes = True 
+        from_attributes = True
+
+class MemoryCreate(BaseModel):
+    user_id: str
+    type: str
+    tags: List[str]
+    content: str
+    date: datetime
+
+class MemoryRead(BaseModel):
+    user_id: str
+    type: Optional[str] = None
+    tags: Optional[List[str]] = None
+    date: Optional[datetime] = None
+
+class MemoryQuery(BaseModel):
+    user_id: str
+    query: str
+
+class MemoryResponse(BaseModel):
+    id: str
+    user_id: str
+    type: str
+    tags: List[str]
+    content: str
+    date: datetime
+    similarity_score: Optional[float] = None 

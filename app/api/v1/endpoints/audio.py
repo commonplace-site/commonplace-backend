@@ -11,7 +11,7 @@ from app.models.audio_file import AudioFile
 from app.schemas.files import FileOut
 from app.schemas.licens import LicenseCreate
 from app.services.s3 import upload_to_s3
-from app.services.whisper_parse import parse_audio_with_whisper
+# from app.services.whisper_parse import parse_audio_with_whisper
 import tempfile
 import os
 
@@ -153,20 +153,20 @@ def get_audio_metadata(
 
 
 
-@router.post("/audio/parse-p3")
-def parse_audio_and_tag(file: UploadFile = File(...)):
-    # S3 bucket name where the audio file will be uploaded
-    bucket_name = "your-s3-bucket-name"
+# @router.post("/audio/parse-p3")
+# def parse_audio_and_tag(file: UploadFile = File(...)):
+#     # S3 bucket name where the audio file will be uploaded
+#     bucket_name = "your-s3-bucket-name"
 
-    # Parse audio and get transcript, tags, and S3 file URL
-    transcript, tags, file_url = parse_audio_with_whisper(file, bucket_name)
+#     # Parse audio and get transcript, tags, and S3 file URL
+#     transcript, tags, file_url = parse_audio_with_whisper(file, bucket_name)
 
-    # Return the result
-    return {
-        "transcript": transcript,
-        "tags": tags,
-        "file_url": file_url  # Returning the S3 URL for the uploaded audio
-    }
+#     # Return the result
+#     return {
+#         "transcript": transcript,
+#         "tags": tags,
+#         "file_url": file_url  # Returning the S3 URL for the uploaded audio
+#     }
 
 @router.post("/transcribe")
 async def transcribe_audio(

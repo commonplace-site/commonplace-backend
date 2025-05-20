@@ -1,5 +1,4 @@
 from .users import User
-from .profile import Profile
 from .vocabulary_log import VocabularyLog
 from .grammar_log import GrammarLog
 from .pronunciation_log import PronunciationLog
@@ -14,4 +13,5 @@ from .scraping_source import ScrapingSource
 from .scraped_content import ScrapedContent
 from .role import Role
 from .files import File
+from .activity import Activity
 from .licenskey import LicenseKey

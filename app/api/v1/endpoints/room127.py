@@ -6,7 +6,7 @@ from uuid import UUID
 
 from app.core.rbac import require_permission
 from app.db.dependencies import get_db
-from app.models.memory import Room127Log
+from app.models.memory import  Room127Log
 from app.schemas.memory import Room127LogCreate, Room127LogResponse
 from app.schemas.mcp import MCPContext, MCPEntry
 from app.services.room127 import Room127Service

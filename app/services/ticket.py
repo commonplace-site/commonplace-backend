@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from sqlalchemy.orm import Session
-from app.models.ticket import Ticket, TicketComment, TicketHistory, TicketStatus
+from app.models.ticket_models import Ticket, TicketComment, TicketHistory, TicketStatus
 from app.schemas.ticket import TicketCreate, TicketUpdate, TicketCommentCreate, TicketCommentUpdate, TicketFilter
 from app.core.security import get_current_user
 from app.core.rbac import check_permission

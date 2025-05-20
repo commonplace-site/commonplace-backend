@@ -66,6 +66,7 @@ from sqlalchemy.orm import relationship
 from app.db.database import BASE
 from uuid import uuid4
 from sqlalchemy.dialects.postgresql import UUID
+import sqlalchemy as sa
 
 # Association table for role permissions
 role_permissions = Table(
@@ -80,6 +81,7 @@ class Role(BASE):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     name = Column(String(50), unique=True, nullable=False)
+    description = Column(String(200))
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -104,7 +106,7 @@ class Permission(BASE):
 class UserRole(BASE):
     __tablename__ = "user_roles"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, server_default=sa.text('gen_random_uuid()'))
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete='CASCADE'), nullable=False)
     role_id = Column(BigInteger, ForeignKey("roles.id", ondelete='CASCADE'), nullable=False)
 

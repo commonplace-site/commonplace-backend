@@ -5,7 +5,7 @@ from datetime import datetime
 
 from app.core.rbac import require_permission
 from app.db.dependencies import get_db
-from app.models.memory import UserProfile, ModuleState, CodexLog, Room127Log, DeveloperLog, AuditLog, UserRole
+from app.models.memory import  ModuleState, CodexLog, Room127Log, DeveloperLog, AuditLog, UserRole
 from app.schemas.memory import (
     UserProfileCreate, UserProfileUpdate, UserProfileResponse,
     ModuleStateCreate, ModuleStateUpdate, ModuleStateResponse,
@@ -42,53 +42,53 @@ def create_audit_log(db: Session, module_state_id: str, action: str, actor_id: s
     return audit_log
 
 # User Profile endpoints
-@router.post("/profiles", response_model=UserProfileResponse)
-def create_user_profile(
-    profile: UserProfileCreate,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(require_permission("profile", "create"))
-):
-    db_profile = UserProfile(**profile.dict())
-    db.add(db_profile)
-    db.commit()
-    db.refresh(db_profile)
-    return db_profile
+# @router.post("/profiles", response_model=UserProfileResponse)
+# def create_user_profile(
+#     profile: UserProfileCreate,
+#     db: Session = Depends(get_db),
+#     current_user: dict = Depends(require_permission("profile", "create"))
+# ):
+#     db_profile = UserProfile(**profile.dict())
+#     db.add(db_profile)
+#     db.commit()
+#     db.refresh(db_profile)
+#     return db_profile
 
-@router.get("/profiles/{user_id}", response_model=UserProfileResponse)
-def get_user_profile(
-    user_id: str,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(require_permission("profile", "read"))
-):
-    profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User profile not found"
-        )
-    return profile
+# @router.get("/profiles/{user_id}", response_model=UserProfileResponse)
+# def get_user_profile(
+#     user_id: str,
+#     db: Session = Depends(get_db),
+#     current_user: dict = Depends(require_permission("profile", "read"))
+# ):
+#     profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+#     if not profile:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="User profile not found"
+#         )
+#     return profile
 
-@router.put("/profiles/{user_id}", response_model=UserProfileResponse)
-def update_user_profile(
-    user_id: str,
-    profile_update: UserProfileUpdate,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(require_permission("profile", "update"))
-):
-    db_profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
-    if not db_profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User profile not found"
-        )
+# @router.put("/profiles/{user_id}", response_model=UserProfileResponse)
+# def update_user_profile(
+#     user_id: str,
+#     profile_update: UserProfileUpdate,
+#     db: Session = Depends(get_db),
+#     current_user: dict = Depends(require_permission("profile", "update"))
+# ):
+#     db_profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+#     if not db_profile:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="User profile not found"
+#         )
     
-    for field, value in profile_update.dict(exclude_unset=True).items():
-        setattr(db_profile, field, value)
+#     for field, value in profile_update.dict(exclude_unset=True).items():
+#         setattr(db_profile, field, value)
     
-    db_profile.updated_at = datetime.utcnow()
-    db.commit()
-    db.refresh(db_profile)
-    return db_profile
+#     db_profile.updated_at = datetime.utcnow()
+#     db.commit()
+#     db.refresh(db_profile)
+#     return db_profile
 
 # Module State endpoints
 @router.post("/modules/{module_id}/users/{user_id}", response_model=ModuleStateResponse)

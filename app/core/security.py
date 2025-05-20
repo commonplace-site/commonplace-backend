@@ -11,8 +11,8 @@ from app.main import SECRET_KEY
 # Security configurations
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECURITY_ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 120
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+ACCESS_TOKEN_EXPIRE_MINUTES = 300
+REFRESH_TOKEN_EXPIRE_DAYS = 1
 
 # Rate limiting configuration
 RATE_LIMIT_PER_MINUTE = 60
