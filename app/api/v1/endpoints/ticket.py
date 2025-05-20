@@ -1,9 +1,9 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.core.database import get_db
-from app.core.security import get_current_user
 from app.core.rbac import check_permission
+from app.core.utils import get_current_user
+from app.db.dependencies import get_db
 from app.services.ticket import TicketService
 from app.schemas.ticket import (
     TicketCreate, TicketUpdate, TicketResponse,
