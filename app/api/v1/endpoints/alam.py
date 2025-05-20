@@ -29,6 +29,7 @@ import tempfile
 import uuid
 from app.services.avatar import avatar_service
 from app.services.redis_service import redis_service
+from pydantic import BaseModel
 
 router = APIRouter(tags=["Aalam Integration"])
 
@@ -120,10 +121,36 @@ async def log_to_room_127(user_id: UUID, context: str, response: AalamResponse, 
             source=response.model_source.value,
             feedback_text=response.response,
             related_module=context,
-            metadata=response.metadata
+            metadata={
+                **response.metadata,
+                "prompt": response.metadata.get("prompt", ""),  # Store the prompt
+                "system_prompt": response.metadata.get("system_prompt", ""),  # Store the system prompt
+                "model": response.metadata.get("model", "gpt-4"),
+                "tokens": {
+                    "prompt": response.metadata.get("prompt_tokens", 0),
+                    "completion": response.metadata.get("completion_tokens", 0),
+                    "total": response.metadata.get("total_tokens", 0)
+                }
+            }
         )
         db.add(feedback_log)
         db.commit()
+
+        # Log to Redis for quick access
+        redis_log = {
+            "user_id": str(user_id),
+            "context": context,
+            "response": response.response,
+            "prompt": response.metadata.get("prompt", ""),
+            "system_prompt": response.metadata.get("system_prompt", ""),
+            "timestamp": datetime.utcnow().isoformat(),
+            "model": response.metadata.get("model", "gpt-4"),
+            "tokens": response.metadata.get("tokens", {})
+        }
+        await redis_service.add_to_list(f"user:{user_id}:interactions", redis_log)
+        
+        # Set expiration for Redis logs (30 days)
+        await redis_service.set_expiry(f"user:{user_id}:interactions", 30 * 24 * 60 * 60)
 
         # Log to external service
         async with httpx.AsyncClient() as client:
@@ -141,7 +168,9 @@ async def log_to_room_127(user_id: UUID, context: str, response: AalamResponse, 
                     "transcription": response.transcription,
                     "metadata": response.metadata,
                     "submission_status": response.submission_status.value if response.submission_status else None,
-                    "review_notes": response.review_notes
+                    "review_notes": response.review_notes,
+                    "prompt": response.metadata.get("prompt", ""),
+                    "system_prompt": response.metadata.get("system_prompt", "")
                 }
             )
         logger.info(f"Logged to Room 127 - User: {user_id}, Context: {context}, Model: {response.model_source.value}")
@@ -659,120 +688,66 @@ async def aalam_tts_stt_endpoint(
         logger.error(f"Aalam TTS-STT failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Aalam TTS-STT failed: {str(e)}")
 
-# @router.post("/aalam")
-# async def aalam_endpoint(
-#     data: AalamInput,
-#     authorization: str = Header(None),
-#     db: Session = Depends(get_db)
-# ):
-#     verify_token(authorization)
-
-#     try:
-#         # Check if request is from subservient API
-#         is_subservient = await check_subservient_api(authorization, db)
-        
-#         # Determine if this is a code-related query
-#         is_code_query = any(keyword in data.text.lower() for keyword in [
-#             'code', 'program', 'function', 'class', 'algorithm', 'implement',
-#             'python', 'javascript', 'java', 'c++', 'typescript', 'sql',
-#             'how to write', 'how to create', 'how to implement', 'create a',
-#             'build a', 'develop a', 'make a', 'show me', 'give me', 'write a'
-#         ])
-        
-#         # Set context to 'code' if it's a code-related query
-#         context = 'code' if is_code_query else data.context
-        
-#         # Generate system prompt based on mode
-#         system_prompt = generate_system_prompt(context, ModelSource.AALAM)
-        
-#         # Call OpenAI API to generate response
-#         response = openai.chat.completions.create(
-#             model="gpt-4",
-#             messages=[
-#                 {"role": "system", "content": system_prompt},
-#                 {"role": "user", "content": data.text},
-#             ]
-#         )
-        
-#         message = response.choices[0].message.content
-        
-#         # Create AalamResponse object with all required fields
-#         aalam_response = AalamResponse(
-#             user_id=data.user_id,
-#             context=context,
-#             response=message,
-#             source="📎 Aalam",
-#             confidence=1.0,
-#             timestamp=datetime.utcnow(),
-#             model_source=ModelSource.AALAM,
-#             metadata={
-#                 **(data.metadata or {}),
-#                 "is_code_response": is_code_query,
-#                 "language": "python" if "python" in data.text.lower() else 
-#                            "javascript" if "javascript" in data.text.lower() else
-#                            "java" if "java" in data.text.lower() else
-#                            "typescript" if "typescript" in data.text.lower() else
-#                            "sql" if "sql" in data.text.lower() else
-#                            "c++" if "c++" in data.text.lower() else
-#                            "unknown"
-#             }
-#         )
-
-#         # Log to Room 127
-#         await log_to_room_127(data.user_id, context, aalam_response, db)
-
-#         # Log to Codex for analysis
-#         await log_to_codex(message, context)
-
-#         # Add to suspense queue if needed
-#         if is_subservient:
-#             await add_to_suspense_queue(message)
-
-#         return aalam_response
-
-#     except Exception as e:
-#         logger.error(f"Aalam failed to respond: {str(e)}")
-#         raise HTTPException(status_code=500, detail=f"Aalam failed to respond: {str(e)}")
-
-def generate_system_prompt(text: str) -> str:
-    if text == 'speak':
-        return 'You are Aalam, a language tutor focused on spoken fluency. Keep responses brief and conversational.'
-    elif text == 'write':
-        return 'You are Aalam, helping the user practice structured writing. Offer suggestions, feedback, and alternatives.'
-    elif text == 'explore':
-        return 'You are Aalam, guiding the user through new ideas and language discovery. Offer insightful, unexpected responses.'
-    else:
-        return 'You are Aalam, a helpful language guide.'
-
-@router.post("/aalam")
-async def aalam_endpoint(data: AalamInput, authorization: str = Header(None)):
-    verify_token(authorization)  # Assuming the function verify_token exists
-
+@router.post("/aalam", response_model=AalamResponse)
+async def aalam_endpoint(
+    data: AalamInput,
+    authorization: str = Header(None),
+    db: Session = Depends(get_db)
+):
     try:
-        # Generate system prompt based on mode
-        system_prompt = generate_system_prompt(data.text)
-        
-        # Call OpenAI API to generate response
+        decoded_token = verify_token(authorization)
+        user_id = decoded_token.get("sub")
+
+        if not user_id:
+            raise HTTPException(status_code=400, detail="Token missing 'sub' field")
+
+        # Generate and store system prompt
+        system_prompt = generate_system_prompt(data.text, data.model_source)
+
         response = openai.chat.completions.create(
-            model="gpt-4",  # Or gpt-3.5-turbo based on your preference
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": data.text},
             ]
         )
-        
+
         message = response.choices[0].message.content
 
-        # Return the response
-        return {
-            "user_id": data.user_id,
-            "context": data.context,
-            "response": message
-        }
+        # Create response object with prompt information
+        aalam_response = AalamResponse(
+            user_id=user_id,
+            context=data.context,
+            response=message,
+            model_source=data.model_source,
+            confidence=1.0,
+            source="openai",
+            timestamp=datetime.utcnow(),
+            metadata={
+                "model": "gpt-4",
+                "prompt": data.text,  # Store the user's prompt
+                "system_prompt": system_prompt,  # Store the system prompt
+                "prompt_tokens": response.usage.prompt_tokens,
+                "completion_tokens": response.usage.completion_tokens,
+                "total_tokens": response.usage.total_tokens
+            }
+        )
+
+        # Log the interaction with prompts
+        await log_to_room_127(user_id, data.context, aalam_response, db)
+        await log_to_codex(data.text, data.context)
+
+        return aalam_response
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Aalam failed to respond: {str(e)}")
-
+        logger.error(f"Aalam endpoint error: {str(e)}")
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(
+            status_code=500,
+            detail=f"Aalam failed to respond: {str(e)}"
+        )
+    
 
 @router.post("/aalam/vet")
 async def vet_content(
@@ -957,8 +932,6 @@ async def list_chats(
     except Exception as e:
         logger.error(f"Failed to list chats: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to list chats: {str(e)}")
-
-
 
 @router.put("/aalam/chats/{chat_id}", response_model=ChatHistoryResponse)
 async def update_chat(
@@ -1244,3 +1217,35 @@ async def log_contradiction_resolution(
         logger.info(f"Logged contradiction resolution - ID: {contradiction_id}")
     except Exception as e:
         logger.error(f"Failed to log contradiction resolution: {str(e)}")
+
+class FeedbackLogResponse(BaseModel):
+    id: int
+    user_id: str
+    source: str
+    feedback_text: str
+    related_module: Optional[str]
+    metadata: Dict[str, Any]
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+@router.get("/aalam/feedback/{user_id}", response_model=List[FeedbackLogResponse])
+async def get_user_feedback(
+    user_id: str,
+    authorization: str = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Get feedback history for a specific user"""
+    verify_token(authorization)
+    
+    try:
+        user_feedback = db.query(FeedbackLog).filter(
+            FeedbackLog.user_id == user_id
+        ).order_by(FeedbackLog.created_at.desc()).all()
+        
+        return user_feedback
+    except Exception as e:
+        logger.error(f"Failed to get user feedback: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get user feedback: {str(e)}")

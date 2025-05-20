@@ -80,8 +80,6 @@ class Role(BASE):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     name = Column(String(50), unique=True, nullable=False)
-    description = Column(String(200))
-    level = Column(Integer, nullable=False)  # Higher number means more privileges
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

@@ -28,6 +28,7 @@ class User(BASE):
     user_roles = relationship("UserRole", back_populates="user")
     files = relationship("File", back_populates="user")
     license_keys = relationship("LicenseKey", back_populates="user")
+    businesses = relationship("Business", back_populates="owner")
     is_active = Column(Boolean, default=True)
     created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)
     updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)

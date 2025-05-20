@@ -14,6 +14,16 @@ class ModuleResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class ModuleCreate(BaseModel):
+    name: str
+    status: str = "active"
+    active_user: int = 0
+
+class ModuleUpdate(BaseModel):
+    name: Optional[str] = None
+    status: Optional[str] = None
+    active_user: Optional[int] = None
+
 class LessonResponse(BaseModel):
     id: int
     title: str
@@ -23,4 +33,14 @@ class LessonResponse(BaseModel):
     updated_at: datetime
 
     class Config:
-        from_attributes = True 
+        from_attributes = True
+
+class LessonCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    content_url: Optional[str] = None
+
+class LessonUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    content_url: Optional[str] = None 

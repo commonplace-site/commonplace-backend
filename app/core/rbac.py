@@ -4,20 +4,27 @@ from app.db.dependencies import get_db
 from app.models.role import Role, Permission, UserRole
 from app.db.database import BASE
 from sqlalchemy.orm import Session
+from app.models.business import business_users
 from fastapi import Depends, HTTPException, status
 from app.services.rbac import RBACService
 # from app.db.database import get_db
 
 # Define default permissions
 DEFAULT_PERMISSIONS = {
-    # Ticket permissions
-    "ticket:create": "Create new tickets",
-    "ticket:read": "View tickets and their details",
-    "ticket:update": "Update ticket information",
-    "ticket:delete": "Delete tickets",
-    "ticket:comment": "Add and manage comments on tickets",
-    "ticket:assign": "Assign tickets to users",
-    "ticket:close": "Close and resolve tickets",
+    # Business permissions
+    "business:create": "Create new businesses",
+    "business:read": "View business information",
+    "business:update": "Update business information",
+    "business:delete": "Delete businesses",
+    "business:manage_users": "Manage business users",
+    "business:manage_modules": "Manage business modules",
+    "business:manage_lessons": "Manage business lessons",
+    
+    # Business role permissions
+    "business_admin:manage": "Manage business administration",
+    "business_teacher:manage": "Manage business teaching",
+    "business_student:manage": "Manage business students",
+    "business_moderator:manage": "Manage business content moderation",
     
     # Existing permissions
     "user:create": "Create new users",
@@ -60,6 +67,15 @@ ROLE_PERMISSIONS = {
         "ticket:create", "ticket:read", "ticket:comment",
         "module:read"
     ]
+}
+
+# Define role hierarchy
+ROLE_HIERARCHY = {
+    "root_admin": 5,  # Can manage all businesses
+    "business_admin": 4,  # Can manage single business
+    "business_teacher": 3,
+    "business_moderator": 2,
+    "business_student": 1
 }
 
 def check_permission(user: Dict, permission: str) -> bool:
@@ -146,4 +162,56 @@ def require_permission(resource: str, action: str):
                 detail=f"Permission denied: {resource}:{action}"
             )
         return current_user
-    return _require_permission 
+    return _require_permission
+
+def check_business_permission(user_id: str, business_id: str, required_permission: str, db: Session) -> bool:
+    """Check if user has required permission for a specific business"""
+    # Get user's business role
+    business_user = db.query(business_users).filter(
+        business_users.c.user_id == user_id,
+        business_users.c.business_id == business_id,
+        business_users.c.is_active == True
+    ).first()
+    
+    if not business_user:
+        return False
+        
+    # Check if user's role has the required permission
+    role_permissions = get_role_permissions(business_user.role)
+    return required_permission in role_permissions
+
+def get_role_permissions(role: str) -> List[str]:
+    """Get permissions for a specific role"""
+    role_permissions = {
+        "root_admin": list(DEFAULT_PERMISSIONS.keys()),
+        "business_admin": [
+            "business:read",
+            "business:update",
+            "business:manage_users",
+            "business:manage_modules",
+            "business:manage_lessons",
+            "module:create",
+            "module:read",
+            "module:update",
+            "module:delete",
+            "user:read",
+            "user:update"
+        ],
+        "business_teacher": [
+            "business:read",
+            "module:create",
+            "module:read",
+            "module:update",
+            "user:read"
+        ],
+        "business_moderator": [
+            "business:read",
+            "module:read",
+            "module:review"
+        ],
+        "business_student": [
+            "business:read",
+            "module:read"
+        ]
+    }
+    return role_permissions.get(role, []) 
