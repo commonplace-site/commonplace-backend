@@ -2,9 +2,10 @@ from uuid import UUID
 from typing import List, Optional
 from fastapi import APIRouter, Depends, File, Form, UploadFile, HTTPException
 from sqlalchemy.orm import Session
-from app.core.utils import role_required, get_current_user
+from app.core.utils import role_required
 from app.db.dependencies import get_db
-from app.models.users import User, UserProfile, UserConsent
+from app.models.memory import UserProfile
+from app.models.users import  UserConsent
 from app.models.learning_module import LearningModule
 from app.models.lesson import Lesson
 from app.models.audio_file import AudioFile
