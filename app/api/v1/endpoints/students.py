@@ -13,7 +13,6 @@ from app.schemas.files import FileOut
 from app.services.s3 import upload_to_s3
 
 router = APIRouter(
-    prefix="/student",
     tags=["Student"]
 )
 
