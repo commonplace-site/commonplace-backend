@@ -1,33 +1,53 @@
+# Web Framework and Server
 uvicorn>=0.15.0
 fastapi>=0.68.0
-SQLALchemy>=1.4.23
+python-multipart>=0.0.5
+
+# Database and ORM
+SQLAlchemy>=1.4.23
 alembic>=1.7.1
-python-dotenv>=0.19.0
 psycopg2-binary>=2.9.1
+redis>=4.0.0
+
+# Authentication and Security
 PyJWT==2.10.1
 python-jose[cryptography]>=3.3.0
-openai==1.76
-email-validator==2.1.0.post1
-python-multipart>=0.0.5
 passlib[bcrypt]>=1.7.4
 bcrypt==4.3.0
-boto3==1.34.59
-aiofiles==23.2.1
-pydantic>=1.8.2
-ffmpeg-python
-jinja2==3.1.2
-# TTS and STT dependencies
+email-validator==2.1.0.post1
+
+# AI and ML
+openai==1.76
+sentence-transformers>=2.2.2
+torch>=2.0.0
+numpy>=1.21.0
+qdrant-client>=1.1.1
+
+# Audio Processing
 azure-cognitiveservices-speech==1.31.0
 edge-tts==6.1.9
 SpeechRecognition==3.10.0
 pydub==0.25.1
+ffmpeg-python
+
+# Language Processing
 jieba==0.42.1
 pypinyin==0.49.0
-typer>=0.12.3
-redis>=4.0.0
-qdrant-client>=1.1.1
-sentence-transformers>=2.2.2
-torch>=2.0.0
-numpy>=1.21.0
+
+# AWS Integration
+boto3==1.34.59
+
+# Utilities
+python-dotenv>=0.19.0
+aiofiles==23.2.1
+pydantic>=1.8.2
 pydantic-settings>=2.0.0
+jinja2==3.1.2
+typer>=0.12.3
+
+# Development Tools
+pytest>=7.0.0
+black>=22.0.0
+flake8>=4.0.0
+isort>=5.0.0
 

@@ -25,7 +25,7 @@ async def forward_to_aalam(data):
         return response.status_code
 
 # ✅ Webhook endpoint
-@router.post("/api/github/events")
+@router.post("/github/events")
 async def github_webhook(
     request: Request,
     x_hub_signature_256: str = Header(None),
