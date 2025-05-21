@@ -28,6 +28,7 @@ class Business(BASE):
     owner_id = Column(Integer, ForeignKey("users.id"))
     modules = relationship("Module", back_populates="business")
     owner = relationship("User", back_populates="businesses")
+    activities = relationship("Activity", back_populates="business")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
