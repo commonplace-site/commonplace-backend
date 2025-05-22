@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 from uuid import UUID
 from fastapi import APIRouter, File, Form, Depends, Response, UploadFile, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
@@ -14,6 +14,8 @@ from app.services.s3 import upload_to_s3
 # from app.services.whisper_parse import parse_audio_with_whisper
 import tempfile
 import os
+from datetime import datetime
+from sentence_transformers import SentenceTransformer
 
 
 router = APIRouter(tags=['Audio files'])
@@ -220,3 +222,67 @@ async def synthesize_speech(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+async def store_memory(self, memory_id: str, memory_type: ChatbotMemoryType, content: str, ...):
+    embedding = await self.vector_store.generate_embedding(memory.content)
+    await self.vector_store.store_memory(
+        memory_id=memory_id,
+        memory_type=memory.type,
+        content=memory.content,
+        embedding=embedding,
+        metadata={
+            "user_id": str(current_user.id),
+            "business_id": memory.business_id,
+            "conversation_id": memory.conversation_id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    )
+
+async def search_similar_memories(
+    self,
+    query: str,
+    memory_type: Optional[ChatbotMemoryType] = None,
+    filter_conditions: Optional[Dict[str, Any]] = None,
+    limit: int = 5
+) -> List[Dict[str, Any]]:
+    results = self.client.search(
+        collection_name=collection_name,
+        query_vector=query_embedding,
+        query_filter=search_filter,
+        limit=limit,
+        score_threshold=0.7  # Only return results with similarity score > 0.7
+    )
+
+async def get_conversation_context(
+    self,
+    conversation_id: str,
+    memory_type: Optional[ChatbotMemoryType] = None,
+    limit: int = 10
+) -> List[Dict[str, Any]]:
+
+async def get_user_history(
+    self,
+    user_id: str,
+    business_id: str,
+    memory_type: Optional[ChatbotMemoryType] = None,
+    limit: int = 10
+) -> List[Dict[str, Any]]:
+
+self.embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+
+async def search_user_history(self, user_id: str, business_id: str, ...):
+    filter_conditions = {
+        "user_id": user_id,
+        "business_id": business_id
+    }
+
+def _init_collections(self):
+    for memory_type in ChatbotMemoryType:
+        collection_name = f"chatbot_{memory_type.value}"
+
+async def delete_memory(self, memory_id: str, memory_type: ChatbotMemoryType):
+    self.client.delete(
+        collection_name=collection_name,
+        points_selector=models.PointIdsList(points=[memory_id]),
+        wait=True
+    )
