@@ -15,7 +15,9 @@ import sqlalchemy as sa
 class User(BASE):
     __tablename__ = 'users'
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=sa.text('gen_random_uuid()'))
+    # id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=sa.text('uuid_generate_v4()'))
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=sa.text('uuid_generate_v4()'))
+
     first_Name = Column(String(256), nullable=False)
     last_Name = Column(String(256), nullable=True)
     email = Column(String(150), unique=True, nullable=False)
@@ -54,7 +56,7 @@ class User(BASE):
 
 class UserConsent(BASE):
     __tablename__ = "user_consent"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=sa.text('gen_random_uuid()'))
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=sa.text('uuid_generate_v4()'))
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
     consent_given = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow)

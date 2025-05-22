@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 from datetime import datetime
 from uuid import UUID
+from app.core.utils import get_current_user
 from app.models.memory import Memory, MemorySchema, MemoryType
-from app.core.auth import get_current_user
+
 from app.services.memory_service import MemoryService
 from app.schemas.common import PaginationParams
 

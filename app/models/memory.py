@@ -26,6 +26,16 @@ class MemoryType(str, enum.Enum):
     VIDEO = "video"
     DOCUMENT = "document"
 
+class UserRole(str, enum.Enum):
+    ADMIN = "admin"
+    TEACHER = "teacher"
+    STUDENT = "student"
+    DEVELOPER = "developer"
+    MODERATOR = "moderator"
+
+# Business model is defined in separate business model file
+# Don't duplicate it here to avoid conflicts
+
 class Room127Log(BASE):
     __tablename__ = 'room_127_logs'
 
@@ -38,10 +48,8 @@ class Room127Log(BASE):
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationships
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    # Relationships - FIXED: No duplicate user_id column
     user = relationship("User", back_populates="room127_logs")
-    # We don't add a relationship to UserProfile here since there's no direct foreign key
 
 class ModuleState(BASE):
     __tablename__ = 'module_states'
@@ -56,7 +64,6 @@ class ModuleState(BASE):
 
     # Relationships
     user = relationship("User", back_populates="module_states")
-    # We don't add a relationship to UserProfile here since there's no direct foreign key
 
 class CodexLog(BASE):
     __tablename__ = 'codex_logs'
@@ -72,7 +79,6 @@ class CodexLog(BASE):
 
     # Relationships
     user = relationship("User", back_populates="codex_logs")
-    # We don't add a relationship to UserProfile here since there's no direct foreign key
 
 class DeveloperLog(BASE):
     __tablename__ = 'developer_logs'
@@ -88,7 +94,6 @@ class DeveloperLog(BASE):
 
     # Relationships
     user = relationship("User", back_populates="developer_logs")
-    # We don't add a relationship to UserProfile here since there's no direct foreign key
 
 class AuditLog(BASE):
     __tablename__ = 'audit_logs'
@@ -102,22 +107,12 @@ class AuditLog(BASE):
 
     # Relationships
     user = relationship("User", back_populates="audit_logs")
-    # We don't add a relationship to UserProfile here since there's no direct foreign key
-
-class UserRole(str, enum.Enum):
-    ADMIN = "admin"
-    TEACHER = "teacher"
-    STUDENT = "student"
-    DEVELOPER = "developer"
-    MODERATOR = "moderator"
-
-# Temporarily commented out Memory model and its relationships
 
 class Memory(BASE):
     __tablename__ = "memories"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    business_id = Column(String(36), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
+    business_id = Column(UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     type = Column(Enum(MemoryType), nullable=False)
     tags = Column(ARRAY(String), default=list)
@@ -139,32 +134,13 @@ class Memory(BASE):
         viewonly=True
     )
 
-
-# class Business(BASE):
-#     __tablename__ = "businesses"
-
-#     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-#     name = Column(String(100), nullable=False)
-#     description = Column(Text, nullable=True)
-#     settings = Column(JSON, default=dict)
-#     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-#     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
-
-#     # Relationships
-#     # Temporarily commented out Memory relationship
-#     # memories = relationship("Memory", back_populates="business")
-#     # users = relationship("UserProfile", back_populates="business")
-#     activities = relationship("Activity", back_populates="business")
-
-# Temporarily commented out UserProfile model and its relationships
-
 class UserProfile(BASE):
     __tablename__ = "user_profiles"
     __table_args__ = {"extend_existing": True}
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
-    business_id = Column(String(36), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
+    business_id = Column(UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
     role = Column(Enum(UserRole), nullable=False, default=UserRole.STUDENT)
     first_name = Column(String(100), nullable=True)
     last_name = Column(String(100), nullable=True)
@@ -212,7 +188,6 @@ class UserProfile(BASE):
         viewonly=True
     )
 
-
 class MemorySchema(BaseModel):
     id: UUIDType = Field(default_factory=uuid4)
     business_id: str
@@ -226,9 +201,3 @@ class MemorySchema(BaseModel):
 
     class Config:
         from_attributes = True
-
-# This duplicate enum seems unnecessary - consider removing
-class MemoryType(enum.Enum):
-    TEXT = "text"
-    IMAGE = "image"
-    VIDEO = "video"

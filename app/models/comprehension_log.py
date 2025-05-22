@@ -8,7 +8,7 @@ import sqlalchemy as sa
 
 class ComprehensionLog(BASE):
     __tablename__ = 'comprehension_logs'
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, server_default=sa.text('gen_random_uuid()'))
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=sa.text('uuid_generate_v4()'))
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"))
     user = relationship("User", back_populates="comprehension_logs")
     material = Column(Text)

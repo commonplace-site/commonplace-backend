@@ -1,7 +1,7 @@
 from logging.config import fileConfig
 import os
 from dotenv import load_dotenv
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
 from alembic import context
 from app.db.database import BASE
 from app.models.users import User, UserConsent
@@ -25,6 +25,7 @@ from app.models.LanguageTest import LanguageTest
 from app.models.memory import UserProfile, ModuleState, CodexLog, Room127Log, DeveloperLog, AuditLog, Memory
 from app.models.ticket_models import Ticket, TicketComment, TicketHistory
 from app.models.chat_history import ChatHistory
+from app.models.chatbot import ChatbotMemory, ConversationContext
 from app.models.business import Business
 from app.models.arbitration import Arbitration
 from app.models.subai_log import SubAILog
@@ -74,11 +75,17 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        # Drop existing alembic_version table if it exists
+        connection.execute(text("DROP TABLE IF EXISTS alembic_version"))
+        connection.commit()
+
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
             compare_type=True,  # Enable type comparison
             compare_server_default=True,  # Enable server default comparison
+            version_table='alembic_version',  # Explicitly set version table name
+            version_table_schema=None,  # Use default schema
         )
         with context.begin_transaction():
             context.run_migrations()

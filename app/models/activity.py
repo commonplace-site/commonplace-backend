@@ -39,7 +39,7 @@ class Activity(BASE):
     __tablename__ = "activities"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    business_id = Column(String(36), ForeignKey("businesses.id"), nullable=False)
+    business_id = Column(UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE"))
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     type = Column(String(100), nullable=False)  # placeholder for ActivityType
     category = Column(String(100), nullable=False)  # placeholder for ActivityCategory

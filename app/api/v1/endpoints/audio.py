@@ -4,9 +4,11 @@ from fastapi import APIRouter, File, Form, Depends, Response, UploadFile, HTTPEx
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
 import yaml
+from app import models
 from app.core.storage import save_audio_file
 from app.core.utils import role_required, get_current_user, speech_to_text, text_to_speech
 from app.db.dependencies import get_db
+from app.models import memory
 from app.models.audio_file import AudioFile
 from app.schemas.files import FileOut
 from app.schemas.licens import LicenseCreate
@@ -223,7 +225,7 @@ async def synthesize_speech(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def store_memory(self, memory_id: str, memory_type: ChatbotMemoryType, content: str, ...):
+async def store_memory(self, memory_id: str, memory_type: ChatbotMemoryType, content: str):
     embedding = await self.vector_store.generate_embedding(memory.content)
     await self.vector_store.store_memory(
         memory_id=memory_id,
