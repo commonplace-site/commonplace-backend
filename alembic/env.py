@@ -22,9 +22,10 @@ from app.models.licenskey import LicenseKey
 from app.models.Diagnostic import DiagnosticResult
 from app.models.files import File
 from app.models.LanguageTest import LanguageTest
-from app.models.memory import UserProfile, ModuleState, CodexLog, Room127Log, DeveloperLog, AuditLog, Memory, Business
+from app.models.memory import UserProfile, ModuleState, CodexLog, Room127Log, DeveloperLog, AuditLog, Memory
 from app.models.ticket_models import Ticket, TicketComment, TicketHistory
 from app.models.chat_history import ChatHistory
+from app.models.business import Business
 from app.models.arbitration import Arbitration
 from app.models.subai_log import SubAILog
 from app.models.activity import Activity
