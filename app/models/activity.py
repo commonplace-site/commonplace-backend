@@ -38,11 +38,11 @@ class ActivityCategory(str, enum.Enum):
 class Activity(BASE):
     __tablename__ = "activities"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     business_id = Column(String(36), ForeignKey("businesses.id"), nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    type = Column(Enum(ActivityType), nullable=False)
-    category = Column(Enum(ActivityCategory), nullable=False)
+    type = Column(String(100), nullable=False)  # placeholder for ActivityType
+    category = Column(String(100), nullable=False)  # placeholder for ActivityCategory
     action = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
     activities_metadata = Column(JSON, default=dict)
@@ -54,6 +54,7 @@ class Activity(BASE):
     # Relationships
     user = relationship("User", back_populates="activities")
     business = relationship("Business", back_populates="activities")
+
 
 class ActivitySchema(BaseModel):
     id: uuid.UUID

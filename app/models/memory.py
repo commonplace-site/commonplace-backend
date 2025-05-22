@@ -39,6 +39,7 @@ class Room127Log(BASE):
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     user = relationship("User", back_populates="room127_logs")
     # We don't add a relationship to UserProfile here since there's no direct foreign key
 
@@ -46,7 +47,7 @@ class ModuleState(BASE):
     __tablename__ = 'module_states'
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     module_id = Column(String(36), nullable=False)
     state = Column(JSON, nullable=False)
     meta_data = Column(JSON, nullable=True)
@@ -139,21 +140,21 @@ class UserRole(str, enum.Enum):
 #     )
 
 
-class Business(BASE):
-    __tablename__ = "businesses"
+# class Business(BASE):
+#     __tablename__ = "businesses"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = Column(String(100), nullable=False)
-    description = Column(Text, nullable=True)
-    settings = Column(JSON, default=dict)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+#     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+#     name = Column(String(100), nullable=False)
+#     description = Column(Text, nullable=True)
+#     settings = Column(JSON, default=dict)
+#     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+#     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationships
-    # Temporarily commented out Memory relationship
-    # memories = relationship("Memory", back_populates="business")
-    # users = relationship("UserProfile", back_populates="business")
-    activities = relationship("Activity", back_populates="business")
+#     # Relationships
+#     # Temporarily commented out Memory relationship
+#     # memories = relationship("Memory", back_populates="business")
+#     # users = relationship("UserProfile", back_populates="business")
+#     activities = relationship("Activity", back_populates="business")
 
 # Temporarily commented out UserProfile model and its relationships
 
