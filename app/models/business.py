@@ -39,7 +39,9 @@ class Business(BASE):
     users = relationship("User", secondary=business_users, back_populates="businesses")
     owner = relationship("User", foreign_keys=[owner_id], back_populates="owned_businesses")
     learning_modules = relationship("LearningModule", back_populates="business")
+    modules = relationship("LearningModule", back_populates="business", overlaps="learning_modules")  # Alias for learning_modules
     lessons = relationship("Lesson", back_populates="business")
     activities = relationship("Activity", back_populates="business")
     memories = relationship("Memory", back_populates="business")
     user_profiles = relationship("UserProfile", back_populates="business")
+    chatbot_memories = relationship("ChatbotMemory", back_populates="business")

@@ -130,7 +130,6 @@ class Memory(BASE):
         "UserProfile", 
         primaryjoin="and_(Memory.user_id == foreign(UserProfile.user_id), "
                    "Memory.business_id == foreign(UserProfile.business_id))",
-        back_populates="memories",
         viewonly=True
     )
 
@@ -154,37 +153,36 @@ class UserProfile(BASE):
 
     # Relationships
     user = relationship("User", back_populates="profile", uselist=False)
-    business = relationship("Business", back_populates="users")
+    business = relationship("Business", back_populates="user_profiles")
     memories = relationship(
         "Memory", 
         primaryjoin="and_(UserProfile.user_id == foreign(Memory.user_id), "
                     "UserProfile.business_id == foreign(Memory.business_id))",
-        back_populates="user_profile",
         viewonly=True
     )
     room127_logs = relationship(
         "Room127Log", 
-        primaryjoin="UserProfile.user_id == Room127Log.user_id",
+        primaryjoin="UserProfile.user_id == foreign(Room127Log.user_id)",
         viewonly=True
     )
     module_states = relationship(
         "ModuleState", 
-        primaryjoin="UserProfile.user_id == ModuleState.user_id",
+        primaryjoin="UserProfile.user_id == foreign(ModuleState.user_id)",
         viewonly=True
     )
     codex_logs = relationship(
         "CodexLog", 
-        primaryjoin="UserProfile.user_id == CodexLog.user_id",
+        primaryjoin="UserProfile.user_id == foreign(CodexLog.user_id)",
         viewonly=True
     )
     developer_logs = relationship(
         "DeveloperLog", 
-        primaryjoin="UserProfile.user_id == DeveloperLog.user_id",
+        primaryjoin="UserProfile.user_id == foreign(DeveloperLog.user_id)",
         viewonly=True
     )
     audit_logs = relationship(
         "AuditLog", 
-        primaryjoin="UserProfile.user_id == AuditLog.user_id",
+        primaryjoin="UserProfile.user_id == foreign(AuditLog.user_id)",
         viewonly=True
     )
 

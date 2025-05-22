@@ -50,7 +50,10 @@ class User(BASE):
     user_roles = relationship("UserRole", back_populates="user")
     files = relationship("File", back_populates="user")
     license_keys = relationship("LicenseKey", back_populates="user")
-    businesses = relationship("Business", back_populates="owner")
+    owned_businesses = relationship("Business", back_populates="owner")
+    businesses = relationship("Business", secondary="business_users", back_populates="users")
+    memories = relationship("Memory", back_populates="user")
+    profile = relationship("UserProfile", back_populates="user", uselist=False)
 
 
 

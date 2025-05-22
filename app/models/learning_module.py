@@ -17,5 +17,5 @@ class LearningModule(BASE):
     updated_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    business = relationship("Business", back_populates="modules")
+    business = relationship("Business", back_populates="learning_modules")
     lessons = relationship("Lesson", back_populates="module", cascade="all, delete-orphan")
