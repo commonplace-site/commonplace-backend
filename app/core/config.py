@@ -62,7 +62,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list = ["*"]
     
     # Redis settings (all optional with defaults)
-    REDIS_DB: int 
+    REDIS_DB: Optional[int] = None
     REDIS_SSL: bool = False
     
     # Audit logging settings
