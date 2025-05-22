@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Commonplace Backend"
     
     # Security
-    SECRET_KEY: str = "your-secret-key-here"
+    SECRET_KEY: str = ")KAo(vd5)r\=n]ZWJyT2s=pMxoZ.#Rp>L-VeuQrjeeqHcFtA6I"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 300
     
 
@@ -29,7 +29,7 @@ class Settings(BaseSettings):
 
 
     # OpenAI
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
     
     # AWS Settings (Optional)
     AWS_ACCESS_KEY_ID: Optional[str] = None
