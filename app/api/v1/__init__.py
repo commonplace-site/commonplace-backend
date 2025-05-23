@@ -3,7 +3,6 @@ from .endpoints.users import router as user_router
 from .endpoints.auth import router as auth_router
 from .endpoints.shadowbank import router as shadow_bank_router
 from .endpoints.alam import router as alam_router
-from .endpoints.developer import router as developer_route
 from .endpoints.room127 import router as room127_router
 from .endpoints.mcp import router as mcp_router
 from .endpoints.chatbot import router as chatbot_router
@@ -31,6 +30,5 @@ router.include_router(chatbot_router)
 router.include_router(auth_router)
 router.include_router(shadow_bank_router)
 router.include_router(alam_router)
-router.include_router(developer_route)
 router.include_router(room127_router)
 router.include_router(mcp_router)
