@@ -7,6 +7,7 @@ from .endpoints.developer import router as developer_route
 from .endpoints.room127 import router as room127_router
 from .endpoints.mcp import router as mcp_router
 from .endpoints.chatbot import router as chatbot_router
+from .endpoints.ticket import router as ticket_router
 # from app.api.v1.endpoints import (
 #     auth, users, memory, ticket, role
 # )
@@ -25,6 +26,7 @@ router = APIRouter()
 
 
 router.include_router(user_router)
+router.include_router(ticket_router)
 router.include_router(chatbot_router)
 router.include_router(auth_router)
 router.include_router(shadow_bank_router)
