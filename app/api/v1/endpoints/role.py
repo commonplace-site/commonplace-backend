@@ -1,9 +1,9 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.core.database import get_db
 from app.core.security import get_current_user
 from app.core.rbac import check_permission
+from app.db.dependencies import get_db
 from app.services.role import RoleService
 from app.schemas.role import (
     RoleCreate, RoleUpdate, RoleResponse,

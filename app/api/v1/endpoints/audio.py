@@ -10,6 +10,7 @@ from app.core.utils import role_required, get_current_user, speech_to_text, text
 from app.db.dependencies import get_db
 from app.models import memory
 from app.models.audio_file import AudioFile
+from app.models.chatbot import ChatbotMemoryType
 from app.schemas.files import FileOut
 from app.schemas.licens import LicenseCreate
 from app.services.s3 import upload_to_s3
@@ -225,66 +226,111 @@ async def synthesize_speech(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def store_memory(self, memory_id: str, memory_type: ChatbotMemoryType, content: str):
-    embedding = await self.vector_store.generate_embedding(memory.content)
-    await self.vector_store.store_memory(
-        memory_id=memory_id,
-        memory_type=memory.type,
-        content=memory.content,
-        embedding=embedding,
-        metadata={
-            "user_id": str(current_user.id),
-            "business_id": memory.business_id,
-            "conversation_id": memory.conversation_id,
-            "timestamp": datetime.utcnow().isoformat()
+class ChatbotMemoryManager:
+    def __init__(self):
+        self.embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+        self.client = None  # Initialize your vector store client here
+        self._init_collections()  # Initialize collections on startup
+
+    def _init_collections(self):
+        """Initialize vector store collections for each memory type"""
+        try:
+            for memory_type in ChatbotMemoryType:
+                collection_name = f"chatbot_{memory_type.value}"
+                
+                # Check if collection exists
+                collections = self.client.get_collections().collections
+                collection_names = [collection.name for collection in collections]
+                
+                if collection_name not in collection_names:
+                    # Create collection with appropriate configuration
+                    self.client.create_collection(
+                        collection_name=collection_name,
+                        vectors_config={
+                            "size": 384,  # Size for multilingual-MiniLM-L12-v2
+                            "distance": "Cosine"
+                        }
+                    )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to initialize collections: {str(e)}")
+
+    async def delete_memory(
+        self,
+        memory_id: str,
+        memory_type: ChatbotMemoryType
+    ):
+        """Delete a specific memory from the vector store"""
+        collection_name = f"chatbot_{memory_type.value}"
+        
+        try:
+            self.client.delete(
+                collection_name=collection_name,
+                points_selector=models.PointIdsList(points=[memory_id]),
+                wait=True
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to delete memory: {str(e)}")
+
+    async def get_user_history(
+        self,
+        user_id: str,
+        business_id: str,
+        memory_type: Optional[ChatbotMemoryType] = None,
+        limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        """Retrieve user's conversation history"""
+        filter_conditions = {
+            "user_id": user_id,
+            "business_id": business_id
         }
-    )
+        
+        # Determine collection name based on memory type
+        collection_name = f"chatbot_{memory_type.value}" if memory_type else "chatbot_all"
+        
+        try:
+            # Use scroll operation to get all matching points
+            results = self.client.scroll(
+                collection_name=collection_name,
+                filter=filter_conditions,
+                limit=limit,
+                with_payload=True,
+                with_vectors=False,
+                order_by="timestamp"  # Order by timestamp in metadata
+            )
+            
+            # Format and return results
+            return [
+                {
+                    "memory_id": point.id,
+                    "content": point.payload.get("content"),
+                    "metadata": point.payload.get("metadata", {}),
+                    "timestamp": point.payload.get("metadata", {}).get("timestamp"),
+                    "memory_type": point.payload.get("metadata", {}).get("memory_type")
+                }
+                for point in results[0]  # scroll returns (points, next_page_offset)
+            ]
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to retrieve user history: {str(e)}"
+            )
 
-async def search_similar_memories(
-    self,
-    query: str,
-    memory_type: Optional[ChatbotMemoryType] = None,
-    filter_conditions: Optional[Dict[str, Any]] = None,
-    limit: int = 5
-) -> List[Dict[str, Any]]:
-    results = self.client.search(
-        collection_name=collection_name,
-        query_vector=query_embedding,
-        query_filter=search_filter,
-        limit=limit,
-        score_threshold=0.7  # Only return results with similarity score > 0.7
-    )
+# Initialize the memory manager as a singleton
+memory_manager = ChatbotMemoryManager()
 
-async def get_conversation_context(
-    self,
-    conversation_id: str,
-    memory_type: Optional[ChatbotMemoryType] = None,
-    limit: int = 10
-) -> List[Dict[str, Any]]:
-
-async def get_user_history(
-    self,
+# Example usage in an endpoint
+@router.get("/user/{user_id}/history")
+async def get_user_history_endpoint(
     user_id: str,
     business_id: str,
     memory_type: Optional[ChatbotMemoryType] = None,
-    limit: int = 10
-) -> List[Dict[str, Any]]:
-
-self.embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
-
-async def search_user_history(self, user_id: str, business_id: str, ...):
-    filter_conditions = {
-        "user_id": user_id,
-        "business_id": business_id
-    }
-
-def _init_collections(self):
-    for memory_type in ChatbotMemoryType:
-        collection_name = f"chatbot_{memory_type.value}"
-
-async def delete_memory(self, memory_id: str, memory_type: ChatbotMemoryType):
-    self.client.delete(
-        collection_name=collection_name,
-        points_selector=models.PointIdsList(points=[memory_id]),
-        wait=True
+    limit: int = 10,
+    current_user: dict = Depends(role_required("Student"))
+):
+    """Get user's conversation history"""
+    return await memory_manager.get_user_history(
+        user_id=user_id,
+        business_id=business_id,
+        memory_type=memory_type,
+        limit=limit
     )
