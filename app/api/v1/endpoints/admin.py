@@ -29,7 +29,7 @@ async def get_all_users(
     limit: int = 100,
     role: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Admin"))
+    current_user: dict = Depends(role_required("ADMIN"))
 ):
     """Get all users with optional role filter"""
     query = db.query(User)
@@ -41,7 +41,7 @@ async def get_all_users(
 async def create_user(
     user: UserCreate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Admin"))
+    current_user: dict = Depends(role_required("ADMIN"))
 ):
     """Create a new user"""
     db_user = User(**user.dict())
@@ -55,7 +55,7 @@ async def update_user(
     user_id: UUID,
     user_update: UserUpdate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Admin"))
+    current_user: dict = Depends(role_required("ADMIN"))
 ):
     """Update user details"""
     db_user = db.query(User).filter(User.id == user_id).first()
@@ -73,7 +73,7 @@ async def update_user(
 async def delete_user(
     user_id: UUID,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Admin"))
+    current_user: dict = Depends(role_required("ADMIN"))
 ):
     """Delete a user"""
     db_user = db.query(User).filter(User.id == user_id).first()
@@ -88,7 +88,7 @@ async def delete_user(
 @router.get("/private-audios", response_model=List[FileOut])
 async def get_private_audios(
     db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Admin"))
+    current_user: dict = Depends(role_required("ADMIN"))
 ):
     """Get all private audio files"""
     return db.query(AudioFile).filter(AudioFile.audio_type == "private").all()
@@ -97,7 +97,7 @@ async def get_private_audios(
 async def create_module(
     module: ModuleCreate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Admin"))
+    current_user: dict = Depends(role_required("ADMIN"))
 ):
     """Create a new learning module"""
     db_module = LearningModule(**module.dict())
@@ -111,7 +111,7 @@ async def update_module(
     module_id: UUID,
     module_update: ModuleUpdate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Admin"))
+    current_user: dict = Depends(role_required("ADMIN"))
 ):
     """Update a learning module"""
     db_module = db.query(LearningModule).filter(LearningModule.id == module_id).first()
@@ -129,7 +129,7 @@ async def update_module(
 async def create_lesson(
     lesson: LessonCreate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Admin"))
+    current_user: dict = Depends(role_required("ADMIN"))
 ):
     """Create a new lesson"""
     db_lesson = Lesson(**lesson.dict())
@@ -143,7 +143,7 @@ async def update_lesson(
     lesson_id: UUID,
     lesson_update: LessonUpdate,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Admin"))
+    current_user: dict = Depends(role_required("ADMIN"))
 ):
     """Update a lesson"""
     db_lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
@@ -161,7 +161,7 @@ async def update_lesson(
 @router.get("/analytics/users")
 async def get_user_analytics(
     db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Admin"))
+    current_user: dict = Depends(role_required("ADMIN"))
 ):
     """Get user analytics"""
     total_users = db.query(User).count()
@@ -179,7 +179,7 @@ async def get_user_analytics(
 @router.get("/analytics/content")
 async def get_content_analytics(
     db: Session = Depends(get_db),
-    current_user: dict = Depends(role_required("Admin"))
+    current_user: dict = Depends(role_required("ADMIN"))
 ):
     """Get content analytics"""
     total_modules = db.query(LearningModule).count()

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from app.core.utils import get_current_user
 from app.db.dependencies import get_db
 from app.models.role import Role, Permission, UserRole
@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.models.business import business_users
 from fastapi import Depends, HTTPException, status
 from app.services.rbac import RBACService
+from app.models.users import User
 # from app.db.database import get_db
 
 # Define default permissions
@@ -78,16 +79,72 @@ ROLE_HIERARCHY = {
     "business_student": 1
 }
 
-def check_permission(user: Dict, permission: str) -> bool:
+# def check_permission(user: Union[Dict, User], permission: str, db: Session) -> bool:
+#     """Check if a user has a specific permission"""
+#     if not user:
+#         return False
+    
+#     # If user is a User model instance
+#     if isinstance(user, User):
+#         # Get user's roles from the database
+#         user_roles = get_user_roles(str(user.id), db)
+        
+#         # Check if any of the user's roles have the required permission
+#         for user_role in user_roles:
+#             role_name = user_role.role.name if hasattr(user_role, 'role') else user_role
+#             if role_name in ROLE_PERMISSIONS and permission in ROLE_PERMISSIONS[role_name]:
+#                 return True
+#         return False
+    
+#     # If user is a dictionary (legacy support)
+#     if isinstance(user, dict) and "role" in user:
+#         user_role = user["role"]
+#         if user_role not in ROLE_PERMISSIONS:
+#             return False
+#         return permission in ROLE_PERMISSIONS[user_role]
+    
+#     return False
+
+
+def get_user_roles(user_id: str, db: Session) -> List[UserRole]:
+    """Get all roles for a user"""
+    return db.query(UserRole).filter(UserRole.user_id == user_id).all()
+
+def check_permission(user: Union[Dict, User], permission: str, db: Session) -> bool:
     """Check if a user has a specific permission"""
-    if not user or "role" not in user:
+    if not user:
         return False
     
-    user_role = user["role"]
-    if user_role not in ROLE_PERMISSIONS:
+    # If user is a User model instance
+    if isinstance(user, User):
+        # Get user's roles from the database
+        user_roles = get_user_roles(str(user.id), db)
+        
+        # Check if user has admin role - admins can do everything
+        for user_role in user_roles:
+            role = db.query(Role).filter(Role.id == user_role.role_id).first()
+            if role and role.name.upper() == 'ADMIN':
+                return True  # Admin has all permissions
+        
+        # Check if any of the user's roles have the required permission
+        for user_role in user_roles:
+            role = db.query(Role).filter(Role.id == user_role.role_id).first()
+            if role and role.name in ROLE_PERMISSIONS and permission in ROLE_PERMISSIONS[role.name]:
+                return True
         return False
     
-    return permission in ROLE_PERMISSIONS[user_role]
+    # If user is a dictionary (legacy support)
+    if isinstance(user, dict) and "role" in user:
+        user_role = user["role"]
+        # Admin check for dictionary format
+        if isinstance(user_role, str) and user_role.upper() == 'ADMIN':
+            return True
+            
+        if user_role not in ROLE_PERMISSIONS:
+            return False
+        return permission in ROLE_PERMISSIONS[user_role]
+    
+    return False
 
 def get_user_permissions(user: Dict) -> List[str]:
     """Get all permissions for a user"""
@@ -143,11 +200,6 @@ def remove_role_from_user(user_id: str, role_id: str, db: Session) -> bool:
         db.commit()
         return True
     return False
-
-def get_user_roles(user_id: str, db: Session) -> List[str]:
-    """Get all roles for a user"""
-    user_roles = db.query(UserRole).filter(UserRole.user_id == user_id).all()
-    return [ur.role_id for ur in user_roles]
 
 def require_permission(resource: str, action: str):
     """

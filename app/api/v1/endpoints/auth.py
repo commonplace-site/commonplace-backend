@@ -63,7 +63,7 @@ def login(data: LoginSchema, db: Session = Depends(get_db)):
         "sub": user.email,
         "role": active_role.name 
     })
-    return {"access_token": token, "token_type": "bearer","user":{"id":user.id,"email":user.email,"full_Name": user.first_Name + " " + user.last_Name,"expire":300, "role": active_role.name,}}
+    return {"access_token": token, "token_type": "bearer","expire":300,"user":{"id":user.id,"email":user.email,"full_Name": user.first_Name + " " + user.last_Name, "role": active_role.name,}}
 
 # forgot_password route
 @router.post("/forgot-password")
@@ -94,7 +94,7 @@ def reset_password(data:ResetPasswordRequest, db:Session = Depends(get_db)):
     return{"msg":"Password Reset successful"}
     
     
-@router.post("/logout")
+@router.post("/logout")       
 def logout(token: str = Depends(get_current_token)):
     token_blacklist.add(token)
     return {"detail": "Successfully logged out"}    
@@ -103,7 +103,15 @@ def logout(token: str = Depends(get_current_token)):
 # Current user route
 @router.get("/me")
 def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "full_name": f"{current_user.first_Name} {current_user.last_Name}",
+        "is_active": current_user.is_active,
+        "created_at": current_user.created_at,
+        "updated_at": current_user.updated_at
+    }
+
 
 
 @router.get("/admin")
