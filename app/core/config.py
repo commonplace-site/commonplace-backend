@@ -13,15 +13,17 @@ class ModelSource(str, Enum):
     MODULE = "module"
 
 class Settings(BaseSettings):
-    # API Settings
-    API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Commonplace Backend"
+    VERSION: str = "1.0.0"
+    API_V1_STR: str = "/api/v1"
     
     # Security
-    SECRET_KEY: str = ")KAo(vd5)r\=n]ZWJyT2s=pMxoZ.#Rp>L-VeuQrjeeqHcFtA6I"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 300
+    SECRET_KEY: str = "your-secret-key-here"  # Change this in production!
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
-
+    # Database
+    DATABASE_URL: Optional[str] = None
+    
     Notion: str
     synthesia: str
     supabase: str
@@ -84,7 +86,6 @@ class Settings(BaseSettings):
     SUSPENSE_QUEUE_ENDPOINT: str
     
     # Database settings
-    DATABASE_URL: str = os.getenv("DATABASE_URL")
     POOL_SIZE: int = 20
     MAX_OVERFLOW: int = 10
     

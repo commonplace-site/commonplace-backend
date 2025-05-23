@@ -1,7 +1,31 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-from app.models.ticket import TicketStatus, TicketPriority, TicketType
+from enum import Enum
+
+
+class TicketPriority(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    URGENT = "urgent"
+
+
+class TicketStatus(str, Enum):
+    OPEN = "open"
+    IN_PROGRESS = "in_progress"
+    BLOCKED = "blocked"
+    RESOLVED = "resolved"
+    CLOSED = "closed"
+
+
+class TicketType(str, Enum):
+    BUG = "bug"
+    FEATURE = "feature"
+    TASK = "task"
+    ENHANCEMENT = "enhancement"
+    SUPPORT = "support"
+
 
 class TicketBase(BaseModel):
     title: str

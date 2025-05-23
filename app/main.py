@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from app.api.v1 import router as all_routes
 from app.api.v1.endpoints import memory, subai
+from app.core.config import settings
 
 
 load_dotenv()
@@ -18,9 +19,10 @@ SYNESTHESIA_API_KEY = os.getenv("SYNESTHESIA_API_KEY")
 
 
 app=FastAPI(
-    title="Language Learning Ai  Backend",
+    title=settings.PROJECT_NAME,
     description="Backend services for Ai-powered language Learning, roleplay, and teacher support.",
-    version="1.0.0",
+    version=settings.VERSION,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 api_router=APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -44,13 +46,13 @@ app.add_middleware(
 
 # app.include_router(auth.router,prefix='/auth',tags=["Auth"])
 # app.include_router(users.router,prefix="/users",tags=["Users"])
-app.include_router(all_routes,prefix="/api")
+app.include_router(all_routes,prefix=settings.API_V1_STR)
 app.include_router(memory.router, prefix="/api/v1/memory", tags=["memory"])
 app.include_router(subai.router, prefix="/api/v1", tags=["Sub-AI"])
 
 @app.get("/")
-def read_root():
-    return{"message": "Welcome to the Language Learning Ai Backend"}
+async def root():
+    return {"message": "Welcome to Commonplace Backend API"}
 
 
 
