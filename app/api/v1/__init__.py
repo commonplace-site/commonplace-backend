@@ -26,7 +26,7 @@ router = APIRouter()
 
 
 router.include_router(user_router)
-router.include_router(ticket_router)
+router.include_router(ticket_router, prefix="/ticket", tags=["tickets"])
 router.include_router(chatbot_router)
 router.include_router(auth_router)
 router.include_router(shadow_bank_router)

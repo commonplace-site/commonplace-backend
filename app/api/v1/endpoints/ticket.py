@@ -13,7 +13,7 @@ from app.schemas.ticket import (
 
 router = APIRouter()
 
-@router.post("/tickets", response_model=TicketResponse)
+@router.post("", response_model=TicketResponse)
 async def create_ticket(
     ticket_data: TicketCreate,
     db: Session = Depends(get_db),
@@ -25,7 +25,7 @@ async def create_ticket(
     ticket = await ticket_service.create_ticket(ticket_data, current_user["id"])
     return ticket
 
-@router.get("/tickets/{ticket_id}", response_model=TicketResponse)
+@router.get("/{ticket_id}", response_model=TicketResponse)
 async def get_ticket(
     ticket_id: str,
     db: Session = Depends(get_db),
@@ -39,7 +39,7 @@ async def get_ticket(
         raise HTTPException(status_code=404, detail="Ticket not found")
     return ticket
 
-@router.put("/tickets/{ticket_id}", response_model=TicketResponse)
+@router.put("/{ticket_id}", response_model=TicketResponse)
 async def update_ticket(
     ticket_id: str,
     ticket_data: TicketUpdate,
@@ -54,7 +54,7 @@ async def update_ticket(
         raise HTTPException(status_code=404, detail="Ticket not found")
     return ticket
 
-@router.delete("/tickets/{ticket_id}")
+@router.delete("/{ticket_id}")
 async def delete_ticket(
     ticket_id: str,
     db: Session = Depends(get_db),
@@ -67,7 +67,7 @@ async def delete_ticket(
         raise HTTPException(status_code=404, detail="Ticket not found")
     return {"message": "Ticket deleted successfully"}
 
-@router.get("/tickets", response_model=List[TicketResponse])
+@router.get("", response_model=List[TicketResponse])
 async def list_tickets(
     status: Optional[str] = None,
     priority: Optional[str] = None,
@@ -97,7 +97,7 @@ async def list_tickets(
     ticket_service = TicketService(db)
     return ticket_service.list_tickets(filters)
 
-@router.post("/tickets/{ticket_id}/comments", response_model=TicketCommentResponse)
+@router.post("/{ticket_id}/comments", response_model=TicketCommentResponse)
 async def add_comment(
     ticket_id: str,
     comment_data: TicketCommentCreate,
@@ -112,7 +112,7 @@ async def add_comment(
         raise HTTPException(status_code=404, detail="Ticket not found")
     return comment
 
-@router.put("/tickets/comments/{comment_id}", response_model=TicketCommentResponse)
+@router.put("/comments/{comment_id}", response_model=TicketCommentResponse)
 async def update_comment(
     comment_id: str,
     comment_data: TicketCommentUpdate,
@@ -127,7 +127,7 @@ async def update_comment(
         raise HTTPException(status_code=404, detail="Comment not found")
     return comment
 
-@router.delete("/tickets/comments/{comment_id}")
+@router.delete("/comments/{comment_id}")
 async def delete_comment(
     comment_id: str,
     db: Session = Depends(get_db),
@@ -140,7 +140,7 @@ async def delete_comment(
         raise HTTPException(status_code=404, detail="Comment not found")
     return {"message": "Comment deleted successfully"}
 
-@router.get("/tickets/{ticket_id}/history", response_model=List[TicketHistoryResponse])
+@router.get("/{ticket_id}/history", response_model=List[TicketHistoryResponse])
 async def get_ticket_history(
     ticket_id: str,
     db: Session = Depends(get_db),
